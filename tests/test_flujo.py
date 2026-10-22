@@ -124,3 +124,29 @@ class FlujoCompletoTest(TestCase):
         anonimo = Client()
         anonimo.post("/precios/", {"email": "espera@ejemplo.test"})
         self.assertTrue(Lead.objects.filter(email="espera@ejemplo.test").exists())
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_recuperacion_de_contrasena(self):
+        from django.core import mail
+
+        self.client.logout()
+        respuesta = self.client.post("/recuperar/", {"email": EMAIL})
+        self.assertRedirects(respuesta, "/recuperar/enviado/")
+        self.assertEqual(len(mail.outbox), 1)
+
+        cuerpo = mail.outbox[0].body
+        enlace = next(l.strip() for l in cuerpo.splitlines() if "/recuperar/" in l)
+        camino = enlace.replace("http://testserver", "")
+
+        paso = self.client.get(camino, follow=True)
+        self.assertEqual(paso.status_code, 200)
+        url_form = paso.redirect_chain[-1][0]
+
+        final = self.client.post(url_form, {
+            "new_password1": "NuevaClave2026!",
+            "new_password2": "NuevaClave2026!",
+        }, follow=True)
+        self.assertContains(final, "Contraseña actualizada")
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username=EMAIL, password="NuevaClave2026!"))

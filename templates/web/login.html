@@ -15,6 +15,7 @@
       <label for="id_password">Contraseña</label>
       {{ form.password }}
       <button class="btn full" type="submit">Entrar</button>
+      <p class="tiny muted"><a href="{% url 'password_reset' %}">Olvidé mi contraseña</a></p>
       <p class="tiny muted">No tiene cuenta? <a href="{% url 'signup' %}">Crear una</a>.</p>
     </form>
   </div>

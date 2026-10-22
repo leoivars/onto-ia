@@ -117,8 +117,18 @@ AI_MODEL = os.environ.get("AI_MODEL", "gpt-4.1-mini")
 AI_TIMEOUT = int(os.environ.get("AI_TIMEOUT", "120"))
 AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4000"))
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Observador <hola@observador.ar>")
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend" if os.environ.get("EMAIL_HOST")
+    else "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.resend.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "resend")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") == "1"
+EMAIL_TIMEOUT = 15
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Onto <no-reply@onto.xz.com.ar>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
