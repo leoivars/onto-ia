@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Revisión de la entrevista · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Revisión</p>
+    <h1 class="h1-sm">Sus respuestas, {{ contestadas }} de {{ total }}.</h1>
+    <p class="lead narrow">Este es el material con el que se escribe el informe. Si algo está
+      escrito apurado, conviene volver: el informe solo puede ser tan preciso como la entrevista.</p>
+
+    {% if alertas %}
+      <div class="msg msg-warning">
+        <strong>Antes de continuar.</strong> En sus respuestas aparecen señales que exceden el
+        coaching. Este servicio no atiende crisis. Si está en riesgo, llame al 911 o a la línea de
+        salud mental de su provincia (Mendoza: 0800-333-2424).
+      </div>
+    {% endif %}
+
+    <div class="progress thin"><span style="width: {{ pct }}%"></span></div>
+
+    {% for b in bloques %}
+      <div class="card review">
+        <div class="review-head">
+          <h3 class="tight">{{ b.titulo }}</h3>
+          <span class="chip">{{ b.respondidas }}/{{ b.total }}</span>
+          <a class="linkish" href="{% url 'intake:step' b.slug %}">Editar</a>
+        </div>
+        <dl class="qa">
+          {% for pregunta, respuesta in b.items %}
+            <dt>{{ pregunta }}</dt>
+            <dd>{% if respuesta %}{{ respuesta|linebreaksbr }}{% else %}<span class="muted">Sin responder</span>{% endif %}</dd>
+          {% endfor %}
+        </dl>
+      </div>
+    {% endfor %}
+
+    <form method="post" action="{% url 'reports:generar' %}" class="cta-row">
+      {% csrf_token %}
+      <button class="btn" type="submit" {% if contestadas < minimo %}disabled{% endif %}>
+        Generar mi informe
+      </button>
+      <a class="btn btn-ghost" href="{% url 'panel' %}">Volver al panel</a>
+    </form>
+    {% if contestadas < minimo %}
+      <p class="tiny muted">Necesita al menos {{ minimo }} respuestas para generar el informe.</p>
+    {% else %}
+      <p class="tiny muted">El informe se escribe en menos de dos minutos y queda en su panel.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load informe %}
+{% block title %}{{ informe.titulo }} · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap report-wrap">
+    <div class="report-head no-print">
+      <div>
+        <p class="kicker">Informe ontológico</p>
+        <p class="tiny muted">{{ informe.created_at|date:"d/m/Y H:i" }} ·
+          {% if informe.es_ia %}motor de IA {{ informe.model_name }} · {{ informe.tokens_in }} / {{ informe.tokens_out }} tokens{% else %}motor local de demostración{% endif %}</p>
+      </div>
+      <div class="report-actions">
+        <a class="btn btn-ghost btn-sm" href="{% url 'reports:imprimir' informe.pk %}" target="_blank">Imprimir / PDF</a>
+        {% if puede_generar %}
+          <form method="post" action="{% url 'reports:generar' %}" class="inline-form">
+            {% csrf_token %}
+            <button class="btn btn-sm" type="submit">Profundizar</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if not informe.es_ia %}
+      <div class="msg msg-warning no-print">
+        <strong>Versión de demostración.</strong> Este texto lo armó el motor local: la estructura
+        y el análisis son reales, pero la redacción sigue plantillas. Al configurar la clave del
+        modelo de IA, el mismo flujo genera el informe completo.
+      </div>
+    {% endif %}
+
+    <article class="prose report">
+      <h1>{{ informe.titulo }}</h1>
+      {% for seccion in informe.secciones %}
+        <section class="report-section">
+          <h2>{{ seccion.titulo }}</h2>
+          {{ seccion.cuerpo|md }}
+        </section>
+      {% endfor %}
+      <p class="tiny muted disclaimer">Este informe es una herramienta de reflexión, no un
+        diagnóstico ni un tratamiento. No reemplaza la atención de un profesional de la salud
+        mental.</p>
+    </article>
+
+    <div class="no-print">
+      <h2 class="section-h">Su devolución</h2>
+      <p class="lead narrow">Lo que marque acá entra en el próximo informe. Sea concreto: sirve más
+        «no me reconozco en el juicio sobre mi padre» que «estuvo bien».</p>
+
+      {% if feedbacks %}
+        <div class="card">
+          <p class="kicker">Devoluciones registradas</p>
+          {% for fb in feedbacks %}
+            <div class="feedback-item">
+              <p class="tiny muted">{{ fb.created_at|date:"d/m/Y H:i" }} · resonancia {{ fb.resonancia }}/5</p>
+              {% if fb.aciertos %}<p><strong>Le sirvió:</strong> {{ fb.aciertos }}</p>{% endif %}
+              {% if fb.desaciertos %}<p><strong>No le representó:</strong> {{ fb.desaciertos }}</p>{% endif %}
+              {% if fb.profundizar %}<p><strong>Pide profundizar:</strong> {{ fb.profundizar }}</p>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'reports:feedback' informe.pk %}" class="card form-card">
+        {% csrf_token %}
+        <label for="id_resonancia">¿Cuánto le representa este informe?</label>
+        <select name="resonancia" id="id_resonancia">
+          <option value="5">5 · Me representa del todo</option>
+          <option value="4">4 · Casi todo</option>
+          <option value="3" selected>3 · En partes</option>
+          <option value="2">2 · Poco</option>
+          <option value="1">1 · Nada</option>
+        </select>
+
+        <label for="id_aciertos">¿Qué le sirvió?</label>
+        <textarea name="aciertos" id="id_aciertos" rows="3"
+                  placeholder="La sección, la frase, la distinción que le hizo ruido."></textarea>
+
+        <label for="id_desaciertos">¿Qué no le representó?</label>
+        <textarea name="desaciertos" id="id_desaciertos" rows="3"
+                  placeholder="Donde el informe se equivocó o habló de alguien que no es usted."></textarea>
+
+        <label for="id_profundizar">¿Qué quiere profundizar?</label>
+        <textarea name="profundizar" id="id_profundizar" rows="3"
+                  placeholder="Un vínculo, una decisión, un episodio, una conversación."></textarea>
+
+        <button class="btn full" type="submit">Guardar devolución</button>
+      </form>
+
+      <p class="tiny muted">Informes disponibles este mes: {{ disponibles }} de {{ cuota }}.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

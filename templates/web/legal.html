@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Términos y privacidad · {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap prose narrow">
+    <p class="kicker">Legal</p>
+    <h1 class="h1-sm">Términos y política de privacidad</h1>
+    <p class="tiny muted">Última actualización: octubre de 2026.</p>
+
+    <h3>1. Qué es este servicio</h3>
+    <p>{{ SITE_NAME }} es una herramienta de coaching ontológico asistida por inteligencia
+      artificial. A partir de una entrevista escrita, genera un informe de análisis y permite
+      iterarlo con la devolución del usuario. No es psicoterapia, no es un servicio médico, no
+      realiza diagnósticos ni prescribe tratamientos. No sustituye la atención de un profesional
+      de la salud mental.</p>
+    <p>El informe lo produce un modelo de lenguaje. Puede contener errores, generalizaciones o
+      lecturas que no se ajusten a su situación. Usted es la única persona facultada para decidir
+      qué hacer con él.</p>
+
+    <h3>2. Quién es el responsable</h3>
+    <p>El responsable del tratamiento de los datos es el titular del sitio {{ SITE_DOMAIN }}, con
+      domicilio en Mendoza, Argentina. Contacto: <a href="mailto:{{ contacto }}">{{ contacto }}</a>.</p>
+
+    <h3>3. Qué datos tratamos</h3>
+    <ul>
+      <li><strong>Datos de cuenta:</strong> correo electrónico, nombre o seudónimo, contraseña
+        cifrada, fecha de alta y estado de la suscripción.</li>
+      <li><strong>Respuestas de la entrevista:</strong> información sobre su historia, vínculos,
+        trabajo, emociones, creencias y objetivos. Buena parte de esta información puede calificar
+        como <strong>dato sensible</strong> en los términos del artículo 2 de la Ley 25.326.</li>
+      <li><strong>Informes generados y devoluciones</strong> sobre esos informes.</li>
+      <li><strong>Datos técnicos mínimos:</strong> registros de acceso y cookies de sesión
+        necesarias para mantener la sesión iniciada.</li>
+    </ul>
+    <p>No solicitamos datos de salud con fines de diagnóstico, no pedimos documentos de identidad
+      y no requerimos datos de tarjeta en nuestros servidores: cuando se habiliten los pagos, se
+      procesan en la plataforma del proveedor.</p>
+
+    <h3>4. Con qué fundamento</h3>
+    <p>Tratamos estos datos con su <strong>consentimiento expreso</strong>, que usted otorga al
+      crear la cuenta y que puede revocar en cualquier momento eliminando su cuenta. El
+      tratamiento de datos sensibles requiere consentimiento expreso conforme al artículo 7 de la
+      Ley 25.326; al registrarse, usted lo presta para la finalidad exclusiva de generar sus
+      informes de coaching.</p>
+
+    <h3>5. Para qué los usamos</h3>
+    <p>Para generar y guardar sus informes, permitir la iteración con su devolución y mantener su
+      historial. No los usamos para publicidad, no los vendemos y no los cedemos a terceros con
+      fines comerciales. No los utilizamos para entrenar modelos propios.</p>
+    <p>Para redactar el informe, el texto de su entrevista se transmite al proveedor de
+      inteligencia artificial contratado, que lo procesa como encargado del tratamiento bajo sus
+      propias condiciones de servicio y políticas de retención. Si no desea esa transmisión, no
+      utilice el servicio.</p>
+
+    <h3>6. Cuánto tiempo los conservamos</h3>
+    <p>Mientras su cuenta esté activa. Si elimina la cuenta, se borran sus respuestas, informes y
+      devoluciones. Los registros técnicos pueden conservarse por el plazo mínimo exigible por
+      normativa.</p>
+
+    <h3>7. Sus derechos</h3>
+    <p>Puede ejercer los derechos de acceso, rectificación, actualización y supresión previstos en
+      la Ley 25.326 desde su cuenta —descarga completa en formato JSON y eliminación definitiva— o
+      escribiendo a <a href="mailto:{{ contacto }}">{{ contacto }}</a>. La Agencia de Acceso a la
+      Información Pública es el órgano de control; puede presentar reclamos ante ella.</p>
+
+    <h3>8. Seguridad</h3>
+    <p>Las comunicaciones viajan cifradas mediante HTTPS. Las contraseñas se almacenan con hash
+      irreversible. El acceso a los datos está restringido al titular y a la administración
+      técnica del servicio. Ningún sistema es infalible: si detectamos una brecha que afecte sus
+      datos, se lo comunicaremos.</p>
+
+    <h3>9. Menores de edad</h3>
+    <p>El servicio es para personas mayores de 18 años. No recogemos datos de menores de forma
+      consciente. Si advertimos una cuenta de un menor, la damos de baja.</p>
+
+    <h3>10. Límites del servicio y situaciones de riesgo</h3>
+    <p>El servicio no atiende emergencias. Si usted o alguien cerca está en riesgo, comuníquese
+      con el 911 o con la línea de salud mental de su jurisdicción (en Mendoza,
+      0800-333-2424). El informe puede señalar esa derivación, pero no interviene en crisis.</p>
+
+    <h3 id="arrepentimiento">11. Botón de arrepentimiento</h3>
+    <p>Si contrató una suscripción a distancia, puede revocarla dentro de los diez días corridos
+      contados desde la contratación, sin costo y sin expresión de causa, conforme al artículo 34
+      de la Ley 24.240 y la Resolución 424/2020 de la Secretaría de Comercio Interior. Escriba a
+      <a href="mailto:{{ contacto }}?subject=Botón%20de%20arrepentimiento"> {{ contacto }}</a>
+      con el asunto «Botón de arrepentimiento» indicando el correo de la cuenta. Confirmaremos la
+      baja y el reintegro total dentro de los diez días hábiles.</p>
+
+    <h3>12. Ley aplicable</h3>
+    <p>Estos términos se rigen por la ley argentina. Ante cualquier controversia, resultan
+      competentes los tribunales ordinarios de la Provincia de Mendoza, sin perjuicio del derecho
+      del consumidor a accionar en su propio domicilio.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Mi cuenta · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Cuenta</p>
+    <h1 class="h1-sm">Sus datos</h1>
+
+    <div class="card">
+      <dl class="kv">
+        <dt>Correo</dt><dd>{{ user.email }}</dd>
+        <dt>Nombre</dt><dd>{{ perfil.nombre|default:"—" }}</dd>
+        <dt>Plan</dt><dd>{{ perfil.plan_efectivo_display }}
+          {% if perfil.pro_until %}(hasta {{ perfil.pro_until|date:"d/m/Y" }}){% endif %}</dd>
+        <dt>Alta</dt><dd>{{ perfil.created_at|date:"d/m/Y" }}</dd>
+        <dt>Consentimiento</dt><dd>{% if perfil.consent_at %}{{ perfil.consent_at|date:"d/m/Y H:i" }}{% else %}—{% endif %}</dd>
+      </dl>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Código de acceso</p>
+        <p class="small">Si recibió un código de acceso anticipado, actívelo acá.</p>
+        <form method="post" action="{% url 'redeem_code' %}" class="inline-form-row">
+          {% csrf_token %}
+          <input type="text" name="code" placeholder="OBSERVADOR-XXXX" autocomplete="off">
+          <button class="btn btn-sm" type="submit">Activar</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <p class="kicker">Sus datos son suyos</p>
+        <p class="small">Descargue todo lo que escribió y todos sus informes en un archivo JSON, o
+          elimine la cuenta con todo su contenido.</p>
+        <a class="btn btn-ghost full" href="{% url 'export_data' %}">Descargar mis datos</a>
+        <form method="post" action="{% url 'delete_account' %}" class="danger-zone"
+              onsubmit="return confirm('¿Eliminar la cuenta y todos sus informes? Esta acción no se puede deshacer.');">
+          {% csrf_token %}
+          <button class="btn btn-danger full" type="submit">Eliminar mi cuenta</button>
+        </form>
+      </div>
+    </div>
+
+    <p class="tiny muted">Derechos de acceso, rectificación y supresión: Ley 25.326. Consulte
+      <a href="{% url 'legal' %}">términos y privacidad</a>.</p>
+  </div>
+</section>
+{% endblock %}

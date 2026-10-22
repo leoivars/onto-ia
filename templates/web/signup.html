@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Crear cuenta · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Paso 1 de 2</p>
+    <h1 class="h1-sm">Crear su cuenta</h1>
+    <p class="lead">Después empieza la entrevista. Puede dejarla a medias y volver cuando quiera:
+      cada bloque se guarda.</p>
+
+    <form method="post" class="card form-card" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="msg msg-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+      <label for="id_nombre">Nombre</label>
+      {{ form.nombre }}
+      {% if form.nombre.errors %}<p class="err">{{ form.nombre.errors|join:" " }}</p>{% endif %}
+
+      <label for="id_email">Correo electrónico</label>
+      {{ form.email }}
+      {% if form.email.errors %}<p class="err">{{ form.email.errors|join:" " }}</p>{% endif %}
+      <p class="hint">Con este correo ingresa. No enviamos promociones.</p>
+
+      <label for="id_password1">Contraseña</label>
+      {{ form.password1 }}
+      {% if form.password1.errors %}<p class="err">{{ form.password1.errors|join:" " }}</p>{% endif %}
+      <p class="hint">Mínimo 8 caracteres, no demasiado común.</p>
+
+      <label for="id_password2">Repetir contraseña</label>
+      {{ form.password2 }}
+      {% if form.password2.errors %}<p class="err">{{ form.password2.errors|join:" " }}</p>{% endif %}
+
+      <div class="consent">
+        {{ form.consent }}
+        <label for="id_consent" class="consent-label">
+          Autorizo el tratamiento de mis datos personales, incluida la información sensible que
+          decida escribir, con la única finalidad de generar mis informes de coaching. Leí los
+          <a href="{% url 'legal' %}" target="_blank">términos y la política de privacidad</a>.
+        </label>
+      </div>
+      {% if form.consent.errors %}<p class="err">{{ form.consent.errors|join:" " }}</p>{% endif %}
+
+      <button class="btn full" type="submit">Crear cuenta y empezar</button>
+      <p class="tiny muted">Ya tiene cuenta? <a href="{% url 'login' %}">Ingresar</a>.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

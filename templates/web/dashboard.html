@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Panel · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <div class="panel-head">
+      <div>
+        <p class="kicker">Panel</p>
+        <h1 class="h1-sm">Hola, {{ perfil.nombre|default:user.email }}.</h1>
+        <p class="muted">
+          {% if pct == 100 %}Entrevista completa. Puede generar su informe.
+          {% else %}Entrevista {{ pct }}% completa: {{ respondidas }} de {{ total }} respuestas.
+          {% endif %}
+        </p>
+      </div>
+      <div class="card plan-card">
+        <p class="kicker">Plan {{ perfil.plan_efectivo_display }}</p>
+        <p class="big">{{ perfil.informes_disponibles }}<span class="per">/{{ perfil.cuota_mensual }} informes</span></p>
+        <p class="tiny muted">
+          {% if perfil.pro_until %}Acceso hasta {{ perfil.pro_until|date:"d/m/Y" }}{% else %}Renovación mensual{% endif %}
+        </p>
+        {% if not perfil.es_pago %}<a class="btn btn-ghost btn-sm full" href="{% url 'pricing' %}">Mejorar plan</a>{% endif %}
+      </div>
+    </div>
+
+    <div class="progress"><span style="width: {{ pct }}%"></span></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Entrevista</p>
+        {% if sin_responder %}
+          <p class="small">Le faltan {{ sin_responder|length }} de {{ total_bloques }} bloques.</p>
+          <ul class="blocklist">
+            {% for b in stats %}
+              <li>
+                <a href="{% url 'intake:step' b.slug %}">
+                  <span class="bl-title">{{ b.titulo }}</span>
+                  <span class="bl-count">{{ b.hechas }}/{{ b.total }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="small">Todo respondido. Revise sus respuestas antes de generar el informe:
+            la calidad del texto depende de la materia prima.</p>
+          <a class="btn btn-ghost full" href="{% url 'intake:revision' %}">Revisar respuestas</a>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <p class="kicker">Informe</p>
+        {% if informe %}
+          <h3 class="tight">Informe Nº {{ informe.numero }}</h3>
+          <p class="tiny muted">{{ informe.created_at|date:"d/m/Y H:i" }} ·
+            {% if informe.es_ia %}IA {{ informe.model_name }}{% else %}motor local{% endif %}</p>
+          <p class="small">{{ informe.secciones.0.cuerpo|truncatewords:32 }}</p>
+          <a class="btn btn-ghost full" href="{% url 'reports:detalle' informe.pk %}">Abrir informe</a>
+        {% else %}
+          <h3 class="tight">Todavía no generó su informe</h3>
+          <p class="small">Cuando haya respondido al menos {{ minimo }} preguntas, el botón se
+            habilita. El primer informe es el más largo: parte de cero.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'reports:generar' %}" class="gen-form">
+          {% csrf_token %}
+          <button class="btn full" type="submit" {% if not puede_generar %}disabled{% endif %}>
+            {% if informe %}Generar informe de profundización{% else %}Generar mi primer informe{% endif %}
+          </button>
+        </form>
+        {% if not puede_generar %}
+          <p class="tiny muted">
+            {% if respondidas < minimo %}
+              Faltan respuestas para alcanzar el mínimo de {{ minimo }}.
+            {% elif not perfil.puede_generar %}
+              Sin informes disponibles este mes. <a href="{% url 'pricing' %}">Ver planes</a>.
+            {% endif %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if informe %}
+      <p class="tiny muted center"><a href="{% url 'reports:lista' %}">Ver historial de informes</a></p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ SITE_NAME }} · Un informe ontológico sobre cómo está mirando su problema{% endblock %}
+{% block og_title %}Un informe ontológico sobre cómo está mirando su problema{% endblock %}
+{% block description %}La entrevista que un coach ontológico haría en cuatro encuentros, hecha una vez y con más preguntas. Informe escrito sobre juicios, quiebres y conversaciones pendientes.{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Coaching ontológico · sin sesiones</p>
+      <h1>Un informe que muestra cómo está mirando su problema.&nbsp;<em>Y qué no ve.</em></h1>
+      <p class="lead">La entrevista que un coach ontológico haría en cuatro encuentros, hecha
+        una sola vez y con más preguntas. Usted recibe un informe escrito sobre sus juicios,
+        sus quiebres y las conversaciones que viene evitando. Después lo discute, lo corrige y
+        pide profundizar.</p>
+      <div class="cta-row">
+        <a class="btn" href="{% url 'signup' %}">Hacer mi entrevista</a>
+        <a class="btn btn-ghost" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+      <p class="tiny muted">Primer informe incluido, sin tarjeta. 33 preguntas, unos 25 minutos.</p>
+    </div>
+    <aside class="card hero-card">
+      <p class="kicker">Lo que va a recibir</p>
+      <ol class="numbered">
+        <li>Lectura del observador que usted es hoy</li>
+        <li>El quiebre que lo trajo, en concreto</li>
+        <li>Sus juicios maestros, puestos en duda</li>
+        <li>Lenguaje, emoción y cuerpo en una sola línea</li>
+        <li>Promesas incumplidas y deudas conversacionales</li>
+        <li>El costo del patrón, con números</li>
+        <li>Declaraciones que abren acción</li>
+        <li>Plan de 30 días con criterios de cumplimiento</li>
+        <li>Preguntas para el próximo informe</li>
+      </ol>
+      <p class="tiny muted">1.200 a 1.800 palabras. En español rioplatense, tratado de «usted».</p>
+    </aside>
+  </div>
+</section>
+
+<section class="band" id="como-funciona">
+  <div class="wrap">
+    <p class="kicker">Cómo funciona</p>
+    <h2>Cuatro pasos, un ciclo que se afina</h2>
+    <div class="grid-4">
+      <div class="step"><span class="num">01</span>
+        <h3>Entrevista</h3>
+        <p>Siete bloques: contexto, historia, vínculos, trabajo, cuerpo, juicios y objetivo.
+          Cuanto más concreto el relato, más útil el informe. Se guarda a medida que avanza.</p>
+      </div>
+      <div class="step"><span class="num">02</span>
+        <h3>Informe</h3>
+        <p>Un motor de IA con un método ontológico explícito escribe el análisis. No resume lo
+          que usted dijo: lo interpreta con las distinciones de observador, quiebre, juicio y
+          promesa.</p>
+      </div>
+      <div class="step"><span class="num">03</span>
+        <h3>Devolución</h3>
+        <p>Usted marca qué le representó, qué no y qué quiere profundizar. Esa devolución no se
+          archiva: entra en el próximo informe.</p>
+      </div>
+      <div class="step"><span class="num">04</span>
+        <h3>Profundización</h3>
+        <p>El segundo informe corrige el rumbo y trabaja sobre su plan de 30 días. El ciclo
+          convierte un texto en un proceso.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap two-col">
+    <div>
+      <p class="kicker">El método</p>
+      <h2>No es un test de personalidad</h2>
+      <p>El coaching ontológico no trabaja sobre lo que usted <em>es</em>, sino sobre el
+        observador que está siendo: el conjunto de distinciones, juicios y emociones desde el
+        cual mira. Cambiar ese observador cambia lo que queda a su alcance hacer.</p>
+      <p>Por eso el informe no le dice qué hacer con su vida. Le muestra qué está dando por
+        sentado, qué juicio sostiene como si fuera un hecho, y qué conversación evitaría hoy si
+        pudiera. Después le propone un plan pequeño y verificable.</p>
+      <blockquote>Un juicio dicho en voz alta se vuelve una hipótesis. Mientras queda implícito,
+        se comporta como una condena.</blockquote>
+    </div>
+    <div class="card">
+      <p class="kicker">Para quién es</p>
+      <ul class="ticks">
+        <li>Personas en un quiebre: cambio de trabajo, separación, duelo, decisión trabada.</li>
+        <li>Quienes ya hicieron terapia y quieren trabajar el hacer, no solo el entender.</li>
+        <li>Quienes no quieren hablar de esto con un desconocido, pero sí escribirlo.</li>
+        <li>Quienes buscan una segunda lectura antes de contratar un coach humano.</li>
+      </ul>
+      <hr>
+      <p class="kicker">Para quién no es</p>
+      <ul class="crosses">
+        <li>Quien necesita tratamiento por una condición de salud mental.</li>
+        <li>Quien está en crisis: llame al 911 o al 0800-333-2424 (Mendoza).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap two-col">
+    <div>
+      <p class="kicker">Precio</p>
+      <h2>Una suscripción, no una hora de consultorio</h2>
+      <p>El plan Profundo incluye {{ plan_quota.pro }} informes por mes y cuesta
+        ${{ plan_precio.pro }} por mes. Alcanza para el informe inicial, dos profundizaciones y
+        el seguimiento del plan de 30 días, a una fracción de lo que cuesta una sesión.</p>
+      <a class="btn" href="{% url 'pricing' %}">Ver planes</a>
+    </div>
+    <div class="card quiet">
+      <p class="kicker">Transparencia</p>
+      <p class="small">El informe lo escribe un modelo de lenguaje, no una persona. Supervisamos
+        el método, no cada frase. Si algo no le representa, lo dice en la devolución y el próximo
+        informe lo corrige. Sus respuestas son suyas: puede descargarlas o borrarlas desde su
+        cuenta.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Preguntas frecuentes</p>
+    <h2>Lo que suelen preguntar</h2>
+    <div class="faq">
+      <details><summary>¿Esto es terapia?</summary>
+        <p>No. Es coaching ontológico no clínico: no diagnostica, no trata enfermedades y no
+          indica medicación. Si en sus respuestas aparecen señales de riesgo, el informe se lo
+          dice y le da líneas de ayuda.</p></details>
+      <details><summary>¿Quién escribe el informe?</summary>
+        <p>Un motor de IA que trabaja con un método ontológico definido: distinciones, estructura
+          fija de nueve secciones, reglas de estilo y prohibición de diagnosticar. Usted no habla
+          con una persona en ningún momento.</p></details>
+      <details><summary>¿Qué pasa con mis datos?</summary>
+        <p>Se guardan para escribir su informe y su historial. No se venden ni se usan para
+          publicidad. Puede descargarlos completos o eliminar la cuenta y todo su contenido con un
+          botón. El detalle está en <a href="{% url 'legal' %}">términos y privacidad</a>.</p></details>
+      <details><summary>¿Cuánto tarda?</summary>
+        <p>La entrevista, entre 20 y 40 minutos. El informe se escribe en menos de dos minutos y
+          queda disponible en el panel.</p></details>
+      <details><summary>¿Puedo pedir más de un informe?</summary>
+        <p>Sí: es el corazón del producto. Cada informe nuevo incorpora su devolución y el
+          anterior, y avanza sobre el plan de 30 días.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Empiece por escribirse.</h2>
+    <p class="lead">La primera vez que uno pone en palabras el juicio que repite, algo se
+      mueve. El informe es el pretexto para hacerlo.</p>
+    <a class="btn" href="{% url 'signup' %}">Crear mi cuenta</a>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "{{ SITE_NAME }}",
+  "url": "https://{{ SITE_DOMAIN }}",
+  "description": "Coaching ontológico asistido por IA: entrevista escrita, informe personal de nueve secciones y ciclo de profundización con devolución del consultante.",
+  "areaServed": {"@type": "Country", "name": "Argentina"},
+  "availableLanguage": "es-AR",
+  "serviceType": "Coaching ontológico asistido por inteligencia artificial",
+  "email": "{{ CONTACT_EMAIL }}"
+}
+</script>
+{% endblock %}

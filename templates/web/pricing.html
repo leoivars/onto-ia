@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Precios · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="index,follow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Planes</p>
+    <h1 class="h1-sm">Pague por el proceso,<br>no por la hora.</h1>
+    <p class="lead narrow">Todos los planes incluyen la entrevista completa, informes escritos y
+      el ciclo de devolución. La diferencia es cuántos informes puede pedir por mes.</p>
+
+    <div class="grid-3 plans">
+      <div class="card plan">
+        <p class="kicker">Gratuito</p>
+        <p class="price">$0</p>
+        <p class="tiny muted">Para probar el método</p>
+        <ul class="ticks">
+          <li>Entrevista completa</li>
+          <li>{{ plan_quota.free }} informe por mes</li>
+          <li>Devolución sobre el informe</li>
+          <li>Descarga e impresión en PDF</li>
+        </ul>
+        <a class="btn btn-ghost full" href="{% url 'signup' %}">Empezar gratis</a>
+      </div>
+
+      <div class="card plan featured">
+        <p class="kicker">Profundo · el más elegido</p>
+        <p class="price">${{ plan_precio.pro }}<span class="per">/mes</span></p>
+        <p class="tiny muted">Para un proceso de tres meses</p>
+        <ul class="ticks">
+          <li>{{ plan_quota.pro }} informes por mes</li>
+          <li>Profundización con su devolución incorporada</li>
+          <li>Plan de 30 días con seguimiento</li>
+          <li>Historial completo y exportación</li>
+        </ul>
+        <a class="btn full" href="{% url 'signup' %}">Empezar</a>
+      </div>
+
+      <div class="card plan">
+        <p class="kicker">Estudio</p>
+        <p class="price">${{ plan_precio.estudio }}<span class="per">/mes</span></p>
+        <p class="tiny muted">Para coaches y equipos</p>
+        <ul class="ticks">
+          <li>{{ plan_quota.estudio }} informes por mes</li>
+          <li>Informes para consultantes</li>
+          <li>Marca propia en el PDF</li>
+          <li>Soporte por correo</li>
+        </ul>
+        <a class="btn btn-ghost full" href="#lista-de-espera">Consultar</a>
+      </div>
+    </div>
+
+    <div class="note-band">
+      <p><strong>Pagos en habilitación.</strong> Estamos abriendo cupos de acceso anticipado. Los
+        primeros usuarios reciben un código que activa el plan Observador por 30 días sin cargo;
+        los cobros con Mercado Pago se habilitan en la próxima etapa.</p>
+    </div>
+
+    <div class="two-col" id="lista-de-espera">
+      <div>
+        <h2>Lista de espera</h2>
+        <p>Deje su correo y le avisamos cuando abramos la inscripción paga. Sin promociones
+          encubiertas: un correo cuando haya algo que decir.</p>
+      </div>
+      <form method="post" class="card form-card">
+        {% csrf_token %}
+        <label for="id_email">Correo electrónico</label>
+        {{ lead_form.email }}
+        {% if lead_form.email.errors %}<p class="err">{{ lead_form.email.errors|join:" " }}</p>{% endif %}
+        <button class="btn full" type="submit">Anotarme</button>
+        <p class="tiny muted">Al enviar acepta la <a href="{% url 'legal' %}">política de privacidad</a>.</p>
+      </form>
+    </div>
+
+    <div class="faq">
+      <details><summary>¿Puedo cancelar cuando quiera?</summary>
+        <p>Sí. La suscripción es mensual y se cancela desde la cuenta. Además, toda contratación a
+          distancia en Argentina tiene derecho de revocación dentro de los diez días: el botón está
+          en <a href="{% url 'legal' %}#arrepentimiento">términos y privacidad</a>.</p></details>
+      <details><summary>¿El precio está en pesos?</summary>
+        <p>Sí, en pesos argentinos. Los pagos del exterior se cotizan en dólares al tipo de cambio
+          del procesador.</p></details>
+      <details><summary>¿Qué pasa si no uso todos los informes del mes?</summary>
+        <p>No se acumulan. La cuota se renueva el primer día de cada mes.</p></details>
+    </div>
+  </div>
+</section>
+{% endblock %}

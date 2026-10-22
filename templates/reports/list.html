@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Informes · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Historial</p>
+    <h1 class="h1-sm">Sus informes</h1>
+    {% if informes %}
+      <div class="report-list">
+        {% for r in informes %}
+          <a class="card report-row" href="{% url 'reports:detalle' r.pk %}">
+            <div>
+              <h3 class="tight">{{ r.titulo }}</h3>
+              <p class="tiny muted">{{ r.created_at|date:"d/m/Y H:i" }} ·
+                {% if r.es_ia %}IA {{ r.model_name }}{% else %}motor local{% endif %}
+                · {{ r.secciones|length }} secciones</p>
+            </div>
+            <div class="row-meta">
+              {% with fb=r.feedbacks.first %}
+                {% if fb %}<span class="chip">{{ fb.resonancia }}/5</span>{% endif %}
+              {% endwith %}
+              <span class="btn btn-ghost btn-sm">Abrir</span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Todavía no hay informes. Complete la entrevista en el panel.</p>
+      <a class="btn" href="{% url 'panel' %}">Ir al panel</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

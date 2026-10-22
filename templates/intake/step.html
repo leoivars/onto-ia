@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ bloque.titulo }} · Entrevista · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Entrevista · bloque {{ numero }} de {{ total_bloques }} · {{ pct }}% completo</p>
+    <h1 class="h1-sm">{{ bloque.titulo }}</h1>
+    <p class="lead">{{ bloque.intro }}</p>
+
+    <div class="progress thin"><span style="width: {{ pct }}%"></span></div>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      {% for q, valor in items %}
+        <div class="field">
+          <label for="id_{{ q.key }}">{{ q.label }}</label>
+          {% if q.help %}<p class="hint">{{ q.help }}</p>{% endif %}
+          {% if q.type == "text" %}
+            <input type="text" name="{{ q.key }}" id="id_{{ q.key }}" value="{{ valor }}"
+                   autocomplete="off">
+          {% else %}
+            <textarea name="{{ q.key }}" id="id_{{ q.key }}" rows="4">{{ valor }}</textarea>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="cta-row">
+        {% if numero < total_bloques %}
+          <button class="btn" type="submit">Guardar y continuar</button>
+        {% else %}
+          <button class="btn" type="submit">Guardar y terminar</button>
+        {% endif %}
+        <a class="btn btn-ghost" href="{% url 'panel' %}">Guardar y salir</a>
+      </div>
+      <p class="tiny muted">Nada de lo que escriba se publica. <a href="{% url 'legal' %}">Cómo
+        tratamos sus datos</a>.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

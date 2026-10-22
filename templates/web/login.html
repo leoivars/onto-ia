@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Ingresar · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Sesión</p>
+    <h1 class="h1-sm">Ingresar</h1>
+    <form method="post" class="card form-card">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="msg msg-error">Correo o contraseña incorrectos.</div>{% endif %}
+      <label for="id_username">Correo electrónico</label>
+      {{ form.username }}
+      <label for="id_password">Contraseña</label>
+      {{ form.password }}
+      <button class="btn full" type="submit">Entrar</button>
+      <p class="tiny muted">No tiene cuenta? <a href="{% url 'signup' %}">Crear una</a>.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

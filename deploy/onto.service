@@ -1,0 +1,27 @@
+[Unit]
+Description=Onto · coaching ontológico asistido por IA
+After=network.target
+
+[Service]
+Type=simple
+User=onto
+Group=www-data
+WorkingDirectory=/srv/onto
+EnvironmentFile=/srv/onto/.env
+ExecStart=/srv/onto/.venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8001 \
+    --workers 3 \
+    --timeout 180 \
+    --access-logfile - \
+    --error-logfile -
+Restart=always
+RestartSec=3
+
+# Endurecimiento básico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

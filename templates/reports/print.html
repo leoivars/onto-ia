@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load informe %}
+{% block title %}{{ informe.titulo }} · PDF{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<div class="wrap print-wrap">
+  <div class="print-actions no-print">
+    <button class="btn btn-sm" onclick="window.print()">Imprimir o guardar como PDF</button>
+    <a class="btn btn-ghost btn-sm" href="{% url 'reports:detalle' informe.pk %}">Volver</a>
+  </div>
+  <article class="prose report">
+    <p class="kicker">{{ SITE_NAME }} · {{ SITE_TAGLINE }}</p>
+    <h1>{{ informe.titulo }}</h1>
+    <p class="tiny muted">{{ informe.created_at|date:"d/m/Y" }} · para {{ user.profile.nombre|default:user.email }}</p>
+    {% for seccion in informe.secciones %}
+      <section class="report-section">
+        <h2>{{ seccion.titulo }}</h2>
+        {{ seccion.cuerpo|md }}
+      </section>
+    {% endfor %}
+    <p class="tiny muted disclaimer">Documento generado por {{ SITE_NAME }}. Herramienta de
+      reflexión, no diagnóstico ni tratamiento. No reemplaza la atención de un profesional de la
+      salud mental.</p>
+  </article>
+</div>
+{% endblock %}
