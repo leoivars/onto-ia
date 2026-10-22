@@ -88,6 +88,33 @@ público del sitio es esa dirección.
 Si en el futuro se agrega un formulario de contacto con volumen, conviene pasarlo a un Email
 Worker que lo entregue a la app en lugar de depender del reenvío a Gmail.
 
+### Leer la casilla desde el servidor
+
+`hola@onto.xz.com.ar` reenvía a Gmail. Para consultarla sin abrir el navegador, el proyecto trae
+un comando IMAP (`web/management/commands/correo.py`). Requiere una contraseña de aplicación:
+
+1. En la cuenta de Gmail: activar verificación en dos pasos.
+2. Google → Seguridad → Contraseñas de aplicaciones → generar una para "Correo IMAP".
+3. Cargar en `.env` del servidor (no en el repositorio):
+
+```
+MAIL_IMAP_USER=ontoxz@gmail.com
+MAIL_IMAP_PASSWORD=xxxx xxxx xxxx xxxx
+MAIL_IMAP_HOST=imap.gmail.com
+MAIL_IMAP_PORT=993
+```
+
+Uso:
+
+```bash
+docker compose exec -T onto_web python manage.py correo listar --limite 10
+docker compose exec -T onto_web python manage.py correo listar --no-leidos
+docker compose exec -T onto_web python manage.py correo leer 1234
+```
+
+La contraseña de aplicación da acceso completo al buzón. Se revoca desde la misma pantalla de
+Google y conviene regenerarla cada tanto.
+
 ## Notas
 
 - `ALLOWED_HOSTS=onto.xz.com.ar`: cualquier request con otro Host recibe 400.
