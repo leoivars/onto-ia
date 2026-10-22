@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from intake import questions as Q
+from intake.utils import entrevista_cambiada
 from web.models import perfil_de
 
 from . import engine
@@ -19,6 +20,10 @@ logger = logging.getLogger(__name__)
 def lista(request):
     informes = Report.objects.filter(user=request.user).prefetch_related("feedbacks")
     return render(request, "reports/list.html", {"informes": informes})
+
+
+def _entrevista_cambiada(user, informe):  # compatibilidad
+    return entrevista_cambiada(user, informe)
 
 
 @login_required
@@ -41,10 +46,13 @@ def generar(request):
         return redirect("pricing")
 
     ultimo = Report.objects.filter(user=request.user).first()
-    if (ultimo and not ultimo.feedbacks.exists()
-            and (timezone.now() - ultimo.created_at).total_seconds() < 45):
-        messages.info(request, "Ese informe se acaba de generar. Revíselo antes de pedir otro.")
-        return redirect("reports:detalle", pk=ultimo.pk)
+    if ultimo and not request.POST.get("forzar"):
+        if not ultimo.feedbacks.exists() and not _entrevista_cambiada(request.user, ultimo):
+            messages.info(
+                request,
+                "Su informe ya está generado. Si quiere uno nuevo, deje una devolución sobre "
+                "éste o modifique la entrevista; así el segundo aporta algo distinto.")
+            return redirect("reports:detalle", pk=ultimo.pk)
 
     try:
         informe = engine.generar(request.user)

@@ -1,12 +1,15 @@
 """Flujo completo: registro, entrevista, informe, cuota, canje, feedback, exportación y borrado."""
 import json
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
+from django.utils import timezone
 
 from intake import questions as Q
+from intake.models import Answer
 from reports.models import Report
-from web.models import InviteCode, Lead
+from web.models import InviteCode, Lead, perfil_de
 
 EMAIL = "persona@ejemplo.test"
 PASSWORD = "Mendoza2026!"
@@ -124,6 +127,36 @@ class FlujoCompletoTest(TestCase):
         anonimo = Client()
         anonimo.post("/precios/", {"email": "espera@ejemplo.test"})
         self.assertTrue(Lead.objects.filter(email="espera@ejemplo.test").exists())
+
+    def _hacer_pago(self):
+        perfil = perfil_de(self.user)
+        perfil.plan = "pro"
+        perfil.pro_until = date.today() + timedelta(days=30)
+        perfil.save()
+
+    def test_segundo_click_no_duplica_el_informe(self):
+        self._hacer_pago()
+        cargar_entrevista(self.client)
+        self.client.post("/informes/generar/", follow=True)
+        primero = Report.objects.get(user=self.user)
+
+        respuesta = self.client.post("/informes/generar/", follow=True)
+        self.assertEqual(Report.objects.filter(user=self.user).count(), 1)
+        self.assertEqual(respuesta.redirect_chain[-1][0], f"/informes/{primero.pk}/")
+
+        self.client.post("/informes/generar/", {"forzar": "1"}, follow=True)
+        self.assertEqual(Report.objects.filter(user=self.user).count(), 2)
+
+    def test_cambiar_una_respuesta_habilita_otro_informe(self):
+        self._hacer_pago()
+        cargar_entrevista(self.client)
+        self.client.post("/informes/generar/", follow=True)
+        self.assertEqual(Report.objects.filter(user=self.user).count(), 1)
+
+        Answer.objects.filter(user=self.user, key="historia_quiebre").update(
+            value="Otro episodio, contado con más detalle.", updated_at=timezone.now())
+        self.client.post("/informes/generar/", follow=True)
+        self.assertEqual(Report.objects.filter(user=self.user).count(), 2)
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_recuperacion_de_contrasena(self):

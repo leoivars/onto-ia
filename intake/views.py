@@ -3,8 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 
+from reports.models import Report
+
 from . import questions as Q
 from .models import Answer
+from .utils import entrevista_cambiada
 
 
 def _bloque(slug):
@@ -74,6 +77,7 @@ def revision(request):
             "total": len(b["questions"]),
         })
     contestadas, total, pct = Q.progress(request.user)
+    informe = Report.objects.filter(user=request.user).order_by("-numero").first()
     return render(request, "intake/revision.html", {
         "bloques": bloques,
         "contestadas": contestadas,
@@ -81,4 +85,6 @@ def revision(request):
         "pct": pct,
         "alertas": Q.alertas_riesgo(request.user),
         "minimo": Q.MINIMO_PARA_INFORME,
+        "informe": informe,
+        "rehacer": entrevista_cambiada(request.user, informe),
     })

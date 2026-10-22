@@ -36,17 +36,31 @@
       </div>
     {% endfor %}
 
-    <form method="post" action="{% url 'reports:generar' %}" class="cta-row">
-      {% csrf_token %}
-      <button class="btn" type="submit" {% if contestadas < minimo %}disabled{% endif %}>
-        Generar mi informe
-      </button>
-      <a class="btn btn-ghost" href="{% url 'panel' %}">Volver al panel</a>
-    </form>
-    {% if contestadas < minimo %}
-      <p class="tiny muted">Necesita al menos {{ minimo }} respuestas para generar el informe.</p>
+    {% if informe and not rehacer %}
+      <div class="cta-row">
+        <a class="btn" href="{% url 'reports:detalle' informe.pk %}">Ver mi informe</a>
+        <form method="post" action="{% url 'reports:generar' %}"
+              onsubmit="return confirm('Se va a escribir un informe nuevo y consume una cuota. ¿Seguir?');">
+          {% csrf_token %}
+          <input type="hidden" name="forzar" value="1">
+          <button class="btn btn-ghost" type="submit">Generar otro informe</button>
+        </form>
+      </div>
+      <p class="tiny muted">Su informe Nº {{ informe.numero }} ya está escrito. Para que el próximo
+        aporte algo distinto, deje una devolución sobre éste o modifique alguna respuesta.</p>
     {% else %}
-      <p class="tiny muted">El informe se escribe en menos de dos minutos y queda en su panel.</p>
+      <form method="post" action="{% url 'reports:generar' %}" class="cta-row">
+        {% csrf_token %}
+        <button class="btn" type="submit" {% if contestadas < minimo %}disabled{% endif %}>
+          {% if informe %}Generar informe actualizado{% else %}Generar mi informe{% endif %}
+        </button>
+        <a class="btn btn-ghost" href="{% url 'panel' %}">Volver al panel</a>
+      </form>
+      {% if contestadas < minimo %}
+        <p class="tiny muted">Necesita al menos {{ minimo }} respuestas para generar el informe.</p>
+      {% else %}
+        <p class="tiny muted">El informe se escribe en menos de dos minutos y queda en su panel.</p>
+      {% endif %}
     {% endif %}
   </div>
 </section>
