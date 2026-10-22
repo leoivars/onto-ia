@@ -117,6 +117,12 @@ MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY", "")
 MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
 MP_API = os.environ.get("MP_API", "https://api.mercadopago.com")
 
+# ------------------------- Etapa del producto -------------------------
+# Con PAGOS_ACTIVOS=0 el sitio funciona en beta: no se puede pagar y el acceso
+# se otorga con códigos de invitación. Se activa cuando haya validación.
+PAGOS_ACTIVOS = os.environ.get("PAGOS_ACTIVOS", "0") == "1"
+MODO_BETA = not PAGOS_ACTIVOS
+
 # ------------------------- Motor de IA -------------------------
 # La clave NUNCA se guarda en el código: se inyecta por variable de entorno.
 AI_API_KEY = os.environ.get("AI_API_KEY", "")

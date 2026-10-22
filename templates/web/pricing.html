@@ -34,7 +34,7 @@
           <li>Plan de 30 días con seguimiento</li>
           <li>Historial completo y exportación</li>
         </ul>
-        <a class="btn full" href="{% if user.is_authenticated %}{% url 'pagos:suscribirse' 'pro' %}{% else %}{% url 'signup' %}{% endif %}">Suscribirme</a>
+        <a class="btn full" href="{% if pagos_activos and user.is_authenticated %}{% url 'pagos:suscribirse' 'pro' %}{% else %}{% url 'signup' %}{% endif %}">{% if pagos_activos %}Suscribirme{% else %}Pedir acceso{% endif %}</a>
       </div>
 
       <div class="card plan">
@@ -47,14 +47,19 @@
           <li>Marca propia en el PDF</li>
           <li>Soporte por correo</li>
         </ul>
-        <a class="btn btn-ghost full" href="{% if user.is_authenticated %}{% url 'pagos:suscribirse' 'estudio' %}{% else %}{% url 'signup' %}{% endif %}">Elegir Estudio</a>
+        <a class="btn btn-ghost full" href="{% if pagos_activos and user.is_authenticated %}{% url 'pagos:suscribirse' 'estudio' %}{% else %}{% url 'signup' %}{% endif %}">{% if pagos_activos %}Elegir Estudio{% else %}Pedir acceso{% endif %}</a>
       </div>
     </div>
 
     <div class="note-band">
-      <p><strong>Pagos en habilitación.</strong> Estamos abriendo cupos de acceso anticipado. Los
-        primeros usuarios reciben un código que activa el plan Observador por 30 días sin cargo;
-        los cobros con Mercado Pago se habilitan en la próxima etapa.</p>
+      {% if pagos_activos %}
+        <p><strong>Pagos habilitados.</strong> La suscripción se cobra por Mercado Pago, con
+          tarjeta o dinero en cuenta. Se cancela desde su cuenta cuando quiera.</p>
+      {% else %}
+        <p><strong>Etapa beta, sin costo.</strong> Todavía no se cobra: el acceso se otorga por
+          invitación para poder medir si el informe le sirve a quien lo lee. Los precios de arriba
+          son los previstos para cuando se abra la suscripción.</p>
+      {% endif %}
     </div>
 
     <div class="two-col" id="lista-de-espera">

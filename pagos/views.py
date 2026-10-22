@@ -43,6 +43,12 @@ def _firma_valida(request, data_id):
 def suscribirse(request, plan):
     if plan not in PLANES_VALIDOS:
         return redirect("pricing")
+    if not settings.PAGOS_ACTIVOS:
+        messages.info(
+            request,
+            "Estamos en beta: el acceso se otorga por invitación y todavía no se cobra. "
+            "Escribanos si quiere participar.")
+        return redirect("pricing")
     if not mp.configurado():
         messages.error(request, "Los pagos todavía no están habilitados.")
         return redirect("pricing")

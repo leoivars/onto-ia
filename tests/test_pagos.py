@@ -20,7 +20,8 @@ def firma(secreto, data_id, request_id, ts="1700000000"):
     return f"ts={ts},v1={v1}"
 
 
-@override_settings(MP_ACCESS_TOKEN="TEST-token", MP_WEBHOOK_SECRET="secreto-de-prueba")
+@override_settings(MP_ACCESS_TOKEN="TEST-token", MP_WEBHOOK_SECRET="secreto-de-prueba",
+                   PAGOS_ACTIVOS=True)
 class PagosTest(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -42,6 +43,13 @@ class PagosTest(TestCase):
         respuesta = self.client.get("/pagos/suscribirse/gratis/")
         self.assertEqual(respuesta.status_code, 302)
         self.assertFalse(Suscripcion.objects.exists())
+
+    @override_settings(PAGOS_ACTIVOS=False)
+    def test_en_beta_no_se_puede_pagar(self):
+        respuesta = self.client.get("/pagos/suscribirse/pro/", follow=True)
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertFalse(Suscripcion.objects.exists())
+        self.assertContains(respuesta, "beta")
 
     def test_webhook_sin_firma_es_rechazado(self):
         respuesta = self.client.post("/pagos/webhook/?type=subscription_preapproval&data.id=abc")

@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -14,6 +15,7 @@ from intake import questions as Q
 from reports.models import Report
 
 from .forms import LeadForm, SignupForm
+from .metricas import resumen as resumen_metricas
 from .models import InviteCode, Lead, perfil_de
 
 
@@ -76,6 +78,11 @@ def dashboard(request):
 @login_required
 def account(request):
     return render(request, "web/account.html", {"perfil": perfil_de(request.user)})
+
+
+@staff_member_required
+def metricas(request):
+    return render(request, "web/metricas.html", {"m": resumen_metricas()})
 
 
 @login_required

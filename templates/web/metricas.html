@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Métricas · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Validación · {{ m.hoy|date:"d/m/Y" }}</p>
+    <h1 class="h1-sm">¿Esto sirve?</h1>
+    <p class="lead narrow">Los números que importan antes de cobrar: cuántos terminan la
+      entrevista, cuántos leen el informe, cuánto les representa y cuántos vuelven a pedir otro.</p>
+
+    <div class="grid-4">
+      <div class="card">
+        <p class="kicker">Entrevistas completas</p>
+        <p class="big">{{ m.entrevistas_completas }}<span class="per">/{{ m.usuarios }}</span></p>
+        <p class="tiny muted">{{ m.pct_entrevista }}% de las cuentas</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Informes generados</p>
+        <p class="big">{{ m.informes }}</p>
+        <p class="tiny muted">{{ m.usuarios_con_informe }} personas, {{ m.por_motor.ia|default:0 }} con IA</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Resonancia</p>
+        <p class="big">{% if m.resonancia %}{{ m.resonancia }}<span class="per">/5</span>{% else %}—{% endif %}</p>
+        <p class="tiny muted">{{ m.feedback }} devoluciones</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Vuelven</p>
+        <p class="big">{{ m.usuarios_con_dos_informes }}</p>
+        <p class="tiny muted">{{ m.pct_profundiza }}% pidió un segundo informe</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Señales de valor</p>
+        <dl class="kv">
+          <dt>Piden profundizar</dt><dd>{{ m.pct_pide_profundizar }}% de las devoluciones</dd>
+          <dt>Días entre informes</dt><dd>{% if m.demora_promedio %}{{ m.demora_promedio }}{% else %}—{% endif %}</dd>
+          <dt>Cuentas en beta</dt><dd>{{ m.planes.pro|default:0 }} Profundo · {{ m.planes.estudio|default:0 }} Estudio</dd>
+          <dt>Lista de espera</dt><dd>{{ m.leads }} correos</dd>
+        </dl>
+      </div>
+      <div class="card quiet">
+        <p class="kicker">Cómo leerlo</p>
+        <ul class="ticks">
+          <li>Menos de 40% de entrevistas completas: el intake es demasiado largo o no engancha.</li>
+          <li>Resonancia menor a 3,5: el informe no está representando a la persona.</li>
+          <li>Menos de 30% pide un segundo informe: no hay proceso, hay un documento.</li>
+          <li>Si las tres señales están verdes, el precio se puede probar.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -14,4 +14,6 @@ def site(request):
         "perfil": perfil,
         "plan_quota": settings.PLAN_QUOTA,
         "plan_precio": settings.PLAN_PRICE_ARS,
+        "pagos_activos": settings.PAGOS_ACTIVOS,
+        "modo_beta": settings.MODO_BETA,
     }

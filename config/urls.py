@@ -3,8 +3,8 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.urls import include, path, reverse_lazy
 
-from web import views as wv
 from web import seo
+from web import views as wv
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -17,6 +17,7 @@ urlpatterns = [
     path("legal/", wv.legal, name="legal"),
     path("registro/", wv.signup, name="signup"),
     path("panel/", wv.dashboard, name="panel"),
+    path("metricas/", wv.metricas, name="metricas"),
     path("cuenta/", wv.account, name="account"),
     path("cuenta/exportar/", wv.export_data, name="export_data"),
     path("cuenta/eliminar/", wv.delete_account, name="delete_account"),
