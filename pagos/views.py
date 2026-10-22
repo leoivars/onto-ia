@@ -53,7 +53,13 @@ def suscribirse(request, plan):
         preapproval_id, init_point = mp.crear_preapproval(request.user, plan, precio, retorno)
     except mp.MPError as exc:
         logger.warning("No se pudo crear la suscripción: %s", exc)
-        messages.error(request, "Mercado Pago rechazó la operación. Intente en unos minutos.")
+        if "same user" in str(exc).lower():
+            messages.warning(
+                request,
+                "La cuenta que cobra no puede suscribirse a sí misma. Probá con un usuario de "
+                "prueba de Mercado Pago o con otra cuenta.")
+        else:
+            messages.error(request, "Mercado Pago rechazó la operación. Intente en unos minutos.")
         return redirect("pricing")
 
     if not preapproval_id or not init_point:
