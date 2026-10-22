@@ -53,6 +53,69 @@
         </ul>
       </div>
     </div>
+
+    <h2 class="section-h">Consumo de IA</h2>
+    <div class="grid-4">
+      <div class="card">
+        <p class="kicker">Costo de hoy</p>
+        <p class="big">US$ {{ m.costo_hoy|floatformat:3 }}</p>
+        <p class="tiny muted">Acumulado US$ {{ m.costo_total|floatformat:3 }} en total</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Promedio por informe</p>
+        <p class="big">US$ {{ m.costo_promedio|floatformat:4 }}</p>
+        <p class="tiny muted">{{ m.con_ia }} informes con IA</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Tokens</p>
+        <p class="big">{{ m.tokens_entrada }}<span class="per"> in</span></p>
+        <p class="tiny muted">{{ m.tokens_salida }} de salida</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Caché</p>
+        <p class="big">{{ m.pct_cache }}%</p>
+        <p class="tiny muted">{{ m.tokens_cache }} tokens leídos de caché</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Costo por usuario</p>
+        {% if m.por_usuario %}
+          <table class="tabla">
+            <thead><tr><th>Cuenta</th><th>Hoy</th><th>Total</th><th>Informes</th></tr></thead>
+            <tbody>
+              {% for u in m.por_usuario %}
+                <tr>
+                  <td>{{ u.user__email|truncatechars:28 }}</td>
+                  <td>US$ {{ u.costo_hoy|default:0|floatformat:4 }}</td>
+                  <td>US$ {{ u.costo|floatformat:4 }}</td>
+                  <td>{{ u.informes }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="small muted">Todavía no hay informes generados con IA.</p>
+        {% endif %}
+      </div>
+      <div class="card">
+        <p class="kicker">Últimos días</p>
+        {% if m.por_dia %}
+          <table class="tabla">
+            <thead><tr><th>Día</th><th>Informes</th><th>Costo</th></tr></thead>
+            <tbody>
+              {% for d in m.por_dia %}
+                <tr><td>{{ d.dia|date:"d/m/Y" }}</td><td>{{ d.informes }}</td>
+                  <td>US$ {{ d.costo|floatformat:4 }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="small muted">Sin consumo registrado.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

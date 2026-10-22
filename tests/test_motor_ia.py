@@ -1,6 +1,8 @@
 """Camino de IA con un proveedor simulado: no usa claves reales ni red."""
+from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
@@ -8,6 +10,7 @@ from intake import questions as Q
 from intake.models import Answer
 from reports import ai, engine
 from reports.models import Feedback, Report
+from web.models import perfil_de
 
 SECCIONES = [
     ("Lectura del observador", "Usted se describe como «el que sostiene». Eso es un juicio."),
@@ -78,3 +81,40 @@ class MotorIATest(TestCase):
             informe = engine.generar(self.user)
         self.assertEqual(informe.engine, "local")
         self.assertEqual(Report.objects.filter(user=self.user).count(), 1)
+
+    def test_costo_castiga_hora_pico_y_premia_cache(self):
+
+        valle = datetime(2026, 10, 22, 12, 0, tzinfo=timezone.utc)   # jueves, fuera de pico
+        pico = datetime(2026, 10, 22, 2, 0, tzinfo=timezone.utc)     # jueves, 02 UTC
+
+        con_cache = engine.calcular_costo(10_000, 2_000, 5_000, cuando=valle)
+        sin_cache = engine.calcular_costo(10_000, 2_000, 0, cuando=valle)
+        en_pico = engine.calcular_costo(10_000, 2_000, 5_000, cuando=pico)
+
+        self.assertLess(con_cache, sin_cache)
+        self.assertAlmostEqual(en_pico, con_cache * 2, delta=0.00002)
+        self.assertAlmostEqual(con_cache, 0.001965, delta=0.00002)
+
+    def test_router_usa_premium_solo_cuando_conviene(self):
+        ctx = engine.contexto(self.user)
+        self.assertEqual(engine.elegir_modelo(self.user, ctx)[0], settings.AI_MODEL)
+
+        perfil = perfil_de(self.user)
+        perfil.plan = "pro"
+        perfil.pro_until = date.today() + timedelta(days=30)
+        perfil.save()
+
+        ctx = engine.contexto(self.user)
+        self.assertEqual(engine.elegir_modelo(self.user, ctx)[0], settings.AI_MODEL_PREMIUM)
+
+        primero = Report.objects.create(
+            user=self.user, numero=1, titulo="Informe 1", engine="ia", secciones=[],
+            model_name=settings.AI_MODEL_PREMIUM)
+        Feedback.objects.create(report=primero, resonancia=2)
+        ctx = engine.contexto(self.user)
+        self.assertEqual(engine.elegir_modelo(self.user, ctx)[0], settings.AI_MODEL_PREMIUM)
+
+        Feedback.objects.all().delete()
+        Feedback.objects.create(report=primero, resonancia=5)
+        ctx = engine.contexto(self.user)
+        self.assertEqual(engine.elegir_modelo(self.user, ctx)[0], settings.AI_MODEL)

@@ -18,6 +18,7 @@ class Report(models.Model):
     cuerpo = models.TextField(blank=True)
     tokens_in = models.PositiveIntegerField(default=0)
     tokens_out = models.PositiveIntegerField(default=0)
+    tokens_cache = models.PositiveIntegerField(default=0, help_text="Entrada leída de caché")
     costo_usd = models.DecimalField(max_digits=8, decimal_places=4, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

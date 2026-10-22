@@ -127,9 +127,29 @@ MODO_BETA = not PAGOS_ACTIVOS
 # La clave NUNCA se guarda en el código: se inyecta por variable de entorno.
 AI_API_KEY = os.environ.get("AI_API_KEY", "")
 AI_BASE_URL = os.environ.get("AI_BASE_URL", "https://api.openai.com/v1")
-AI_MODEL = os.environ.get("AI_MODEL", "gpt-4.1-mini")
+AI_MODEL = os.environ.get("AI_MODEL", "deepseek-flash")
+AI_MODEL_PREMIUM = os.environ.get("AI_MODEL_PREMIUM", "deepseek-v4-pro")
+AI_PREMIUM_CUPO = int(os.environ.get("AI_PREMIUM_CUPO", "2"))
 AI_TIMEOUT = int(os.environ.get("AI_TIMEOUT", "120"))
 AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4000"))
+# Precios por millón de tokens (horario valle).
+AI_PRICE_IN = float(os.environ.get("AI_PRICE_IN", "0.15"))
+AI_PRICE_OUT = float(os.environ.get("AI_PRICE_OUT", "0.60"))
+AI_PRICE_CACHE_IN = float(os.environ.get("AI_PRICE_CACHE_IN", "0.003"))
+AI_PRICE_PREMIUM_IN = float(os.environ.get("AI_PRICE_PREMIUM_IN", "0.66"))
+AI_PRICE_PREMIUM_OUT = float(os.environ.get("AI_PRICE_PREMIUM_OUT", "1.98"))
+AI_PRICE_PREMIUM_CACHE_IN = float(os.environ.get("AI_PRICE_PREMIUM_CACHE_IN", "0.022"))
+AI_PRECIOS = {
+    AI_MODEL: {"in": AI_PRICE_IN, "out": AI_PRICE_OUT, "cache": AI_PRICE_CACHE_IN},
+    AI_MODEL_PREMIUM: {
+        "in": AI_PRICE_PREMIUM_IN, "out": AI_PRICE_PREMIUM_OUT,
+        "cache": AI_PRICE_PREMIUM_CACHE_IN},
+}
+# DeepSeek duplica tarifas en horas pico (01-04 y 06-10 UTC, lunes a viernes).
+AI_PRICE_PEAK_MULT = float(os.environ.get("AI_PRICE_PEAK_MULT", "2.0"))
+# Presupuesto de contexto por informe, en caracteres.
+AI_MAX_ANSWER_CHARS = int(os.environ.get("AI_MAX_ANSWER_CHARS", "900"))
+AI_MAX_INPUT_CHARS = int(os.environ.get("AI_MAX_INPUT_CHARS", "14000"))
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",

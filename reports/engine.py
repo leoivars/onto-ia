@@ -1,6 +1,6 @@
 """Orquestador de informes: arma el contexto, elige motor y persiste el resultado."""
 import logging
-import os
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.db.models import Max
@@ -40,6 +40,92 @@ def _markdown_plano(secciones):
     return "\n\n".join(f"## {s['titulo']}\n\n{s['cuerpo']}" for s in secciones)
 
 
+def _entrevista_texto(ctx):
+    """Transcripción compacta: cada respuesta recortada y un tope total de caracteres.
+
+    Va primero en el prompt (prefijo estable) para que DeepSeek la tome de su caché
+    automática cuando el mismo usuario pide un segundo informe.
+    """
+    lineas = []
+    for bloque in ctx["bloques"]:
+        items = [(p, r) for p, r in bloque["items"] if r]
+        if not items:
+            continue
+        lineas.append(f"\n[{bloque['titulo']}]")
+        for pregunta, respuesta in items:
+            recorte = respuesta[:settings.AI_MAX_ANSWER_CHARS]
+            if len(respuesta) > len(recorte):
+                recorte += " […]"
+            lineas.append(f"- {pregunta[:80]}: {recorte}")
+    texto = "\n".join(lineas)
+    if len(texto) > settings.AI_MAX_INPUT_CHARS:
+        texto = texto[:settings.AI_MAX_INPUT_CHARS] + "\n[entrevista recortada]"
+    return texto
+
+
+def _resumen_informe(informe):
+    if not informe:
+        return ""
+    partes = []
+    for seccion in informe.secciones:
+        cuerpo = " ".join((seccion.get("cuerpo") or "").split())[:320]
+        partes.append(f"- {seccion['titulo']}: {cuerpo}")
+    return "\n".join(partes)
+
+
+def es_hora_pico(momento=None):
+    momento = momento or datetime.now(timezone.utc)
+    return momento.weekday() < 5 and (1 <= momento.hour < 4 or 6 <= momento.hour < 10)
+
+
+def calcular_costo(tokens_in, tokens_out, tokens_cache=0, cuando=None, modelo=None):
+    """Costo en USD según el modelo usado, su caché y la tarifa de hora pico."""
+    precios = settings.AI_PRECIOS.get(modelo or settings.AI_MODEL, {
+        "in": settings.AI_PRICE_IN, "out": settings.AI_PRICE_OUT,
+        "cache": settings.AI_PRICE_CACHE_IN})
+    multiplicador = settings.AI_PRICE_PEAK_MULT if es_hora_pico(cuando) else 1.0
+    cache = min(tokens_cache, tokens_in)
+    sin_cache = max(tokens_in - cache, 0)
+    costo = (
+        sin_cache * precios["in"]
+        + cache * precios["cache"]
+        + tokens_out * precios["out"]
+    ) * multiplicador / 1_000_000
+    return round(costo, 5)
+
+
+def _premium_usados(user):
+    from .models import Report
+
+    hoy = timezone_nowar()
+    return Report.objects.filter(
+        user=user, model_name=settings.AI_MODEL_PREMIUM,
+        created_at__year=hoy.year, created_at__month=hoy.month).count()
+
+
+def timezone_nowar():
+    from django.utils import timezone as tz
+
+    return tz.localtime()
+
+
+def elegir_modelo(user, ctx):
+    """Modelo rápido por defecto; el caro solo donde aporta o el usuario lo paga."""
+    from web.models import perfil_de
+
+    perfil = perfil_de(user)
+    if not perfil.es_pago:
+        return settings.AI_MODEL, "cuenta sin plan pago"
+    if perfil.plan_efectivo == "estudio":
+        return settings.AI_MODEL_PREMIUM, "plan Estudio"
+    if ctx["anterior"] is None:
+        return settings.AI_MODEL_PREMIUM, "primer informe del plan pago"
+    fb = ctx["feedback"]
+    if fb and fb.resonancia <= 2 and _premium_usados(user) < settings.AI_PREMIUM_CUPO:
+        return settings.AI_MODEL_PREMIUM, "devolución baja: reintento con más capacidad"
+    return settings.AI_MODEL, "plan Profundo dentro de cuota"
+
+
 def contexto(user):
     from web.models import Profile
 
@@ -51,18 +137,20 @@ def contexto(user):
         {"titulo": b["titulo"], "items": [(q["label"], respuestas.get(q["key"], "")) for q in b["questions"]]}
         for b in Q.BLOCKS
     ]
-    return {
+    ctx = {
         "nombre": (nombre_perfil or user.email.split("@")[0]).strip(),
         "respuestas": respuestas,
         "bloques": bloques,
         "respondidas": len(respuestas),
         "total": Q.TOTAL,
         "anterior": anterior,
-        "anterior_markdown": _markdown_plano(anterior.secciones) if anterior else "",
+        "anterior_resumen": _resumen_informe(anterior),
         "feedback": feedback,
         "alertas": Q.alertas_riesgo(user),
         "faltantes": [q["label"] for q in Q.FLAT.values() if not respuestas.get(q["key"])],
     }
+    ctx["entrevista_texto"] = _entrevista_texto(ctx)
+    return ctx
 
 
 def parse_secciones(markdown):
@@ -331,15 +419,18 @@ def _local(ctx):
 def generar(user):
     ctx = contexto(user)
     secciones, motor, modelo = None, "local", ""
-    tokens_in = tokens_out = 0
+    tokens_in = tokens_out = tokens_cache = 0
+    elegido, motivo = elegir_modelo(user, ctx)
+    logger.info("Modelo para %s: %s (%s)", user.pk, elegido, motivo)
 
     if ai.disponible():
         try:
-            texto, usage = ai.generar_informe(ctx)
+            texto, usage = ai.generar_informe(ctx, elegido)
             parseadas = parse_secciones(texto)
             if len(parseadas) >= 5:
-                secciones, motor, modelo = parseadas, "ia", settings.AI_MODEL
+                secciones, motor, modelo = parseadas, "ia", elegido
                 tokens_in, tokens_out = usage["in"], usage["out"]
+                tokens_cache = usage.get("cache", 0)
         except ai.AIUnavailable as exc:
             logger.warning("Motor de IA no disponible: %s", exc)
 
@@ -348,9 +439,7 @@ def generar(user):
         motor = "local"
 
     numero = (Report.objects.filter(user=user).aggregate(m=Max("numero"))["m"] or 0) + 1
-    precio_in = float(getattr(settings, "AI_PRICE_IN", os.environ.get("AI_PRICE_IN", "0.40")))
-    precio_out = float(getattr(settings, "AI_PRICE_OUT", os.environ.get("AI_PRICE_OUT", "1.60")))
-    costo = round((tokens_in * precio_in + tokens_out * precio_out) / 1_000_000, 4)
+    costo = calcular_costo(tokens_in, tokens_out, tokens_cache, modelo=modelo) if motor == "ia" else 0
 
     return Report.objects.create(
         user=user,
@@ -362,5 +451,6 @@ def generar(user):
         cuerpo=_markdown_plano(secciones),
         tokens_in=tokens_in,
         tokens_out=tokens_out,
+        tokens_cache=tokens_cache,
         costo_usd=costo,
     )

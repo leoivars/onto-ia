@@ -2,9 +2,10 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Max, Q, Sum
+from django.db.models.functions import TruncDate
 
-from intake import questions as Q
+from intake import questions as P
 
 from .models import Profile
 from .models import Lead
@@ -18,8 +19,8 @@ def resumen():
     total = usuarios.count()
     completas = 0
     for user in usuarios:
-        respondidas, _, _ = Q.progress(user)
-        if respondidas >= Q.MINIMO_PARA_INFORME:
+        respondidas, _, _ = P.progress(user)
+        if respondidas >= P.MINIMO_PARA_INFORME:
             completas += 1
 
     informes = Report.objects.all()
@@ -43,6 +44,23 @@ def resumen():
 
     planes = dict(Profile.objects.values_list("plan").annotate(n=Count("id")))
 
+    consumo = informes.aggregate(
+        entrada=Sum("tokens_in"), salida=Sum("tokens_out"),
+        cache=Sum("tokens_cache"), costo=Sum("costo_usd"))
+    con_ia = informes.filter(engine="ia").count()
+    entrada = consumo["entrada"] or 0
+    cache = consumo["cache"] or 0
+
+    hoy = date.today()
+    con_ia_qs = informes.filter(engine="ia")
+    por_usuario = list(con_ia_qs.values("user__email").annotate(
+        costo=Sum("costo_usd"), informes=Count("id"),
+        costo_hoy=Sum("costo_usd", filter=Q(created_at__date=hoy)),
+        ultimo=Max("created_at")).order_by("-costo")[:10])
+    por_dia = list(con_ia_qs.annotate(dia=TruncDate("created_at")).values("dia").annotate(
+        costo=Sum("costo_usd"), informes=Count("id")).order_by("-dia")[:7])
+    costo_hoy = con_ia_qs.filter(created_at__date=hoy).aggregate(c=Sum("costo_usd"))["c"] or 0
+
     return {
         "usuarios": total,
         "entrevistas_completas": completas,
@@ -58,5 +76,15 @@ def resumen():
         "demora_promedio": demora_promedio,
         "planes": planes,
         "leads": Lead.objects.count(),
-        "hoy": date.today(),
+        "tokens_entrada": entrada,
+        "tokens_salida": consumo["salida"] or 0,
+        "tokens_cache": cache,
+        "pct_cache": round(100 * cache / entrada) if entrada else 0,
+        "costo_total": float(consumo["costo"] or 0),
+        "costo_promedio": round(float(consumo["costo"] or 0) / con_ia, 5) if con_ia else 0,
+        "con_ia": con_ia,
+        "costo_hoy": float(costo_hoy),
+        "por_usuario": por_usuario,
+        "por_dia": por_dia,
+        "hoy": hoy,
     }

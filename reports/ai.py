@@ -57,30 +57,33 @@ Devuelva Markdown con exactamente estos encabezados de nivel 2, en este orden y 
 """
 
 
-def _formatear_entrevista(ctx):
-    lineas = []
-    for bloque in ctx["bloques"]:
-        lineas.append(f"\n### {bloque['titulo']}")
-        for pregunta, respuesta in bloque["items"]:
-            if respuesta:
-                lineas.append(f"- {pregunta}\n  {respuesta}")
-    return "\n".join(lineas)
+def _formatear_entrevista(ctx):  # pragma: no cover - compatibilidad
+    return ctx.get("entrevista_texto", "")
 
 
-def generar_informe(ctx):
+def generar_informe(ctx, modelo=None):
     """Devuelve (texto_markdown, usage). Lanza AIUnavailable si no hay motor."""
     if not disponible():
         raise AIUnavailable("Falta AI_API_KEY")
 
+    ctx = {
+        "nombre": ctx["nombre"],
+        "respondidas": ctx["respondidas"],
+        "total": ctx["total"],
+        "entrevista_texto": ctx["entrevista_texto"],
+        "anterior_resumen": ctx["anterior_resumen"],
+        "feedback": ctx["feedback"],
+        "alertas": ctx["alertas"],
+    }
     partes = [
         f"Consultante: {ctx['nombre']}",
         f"Entrevista de intake ({ctx['respondidas']} respuestas de {ctx['total']}):",
-        _formatear_entrevista(ctx),
+        ctx["entrevista_texto"],
     ]
 
-    if ctx.get("anterior"):
-        partes.append("\n### Informe anterior (no lo repita: profundícelo)")
-        partes.append(ctx["anterior_markdown"])
+    if ctx["anterior_resumen"]:
+        partes.append("\n### Informe anterior (resumen; no lo repita: profundícelo)")
+        partes.append(ctx["anterior_resumen"])
 
     if ctx.get("feedback"):
         fb = ctx["feedback"]
@@ -101,7 +104,7 @@ def generar_informe(ctx):
             "de salud mental y a una línea de ayuda local. No intente intervenir en crisis.")
 
     payload = {
-        "model": settings.AI_MODEL,
+        "model": modelo or settings.AI_MODEL,
         "temperature": 0.7,
         "max_tokens": settings.AI_MAX_TOKENS,
         "messages": [
@@ -120,4 +123,5 @@ def generar_informe(ctx):
     return texto, {
         "in": int(usage.get("prompt_tokens") or 0),
         "out": int(usage.get("completion_tokens") or 0),
+        "cache": int(usage.get("prompt_cache_hit_tokens") or 0),
     }
