@@ -73,7 +73,7 @@ con las mismas credenciales del proyecto turnovip. La autenticación funciona, p
 remitentes de dominios aprobados en la consola.
 
 Estado actual: `DEFAULT_FROM_EMAIL=Onto <agenda@turnos.xz.com.ar>`, que es la dirección aprobada.
-Para pasar a `no-reply@onto.xz.com.ar`:
+Para pasar a `no-responder@onto.xz.com.ar`:
 
 1. OCI → Email Delivery → Domains → agregar `onto.xz.com.ar` y verificar por TXT.
 2. Generar la DKIM del dominio nuevo (CNAME de 2048 bits).
