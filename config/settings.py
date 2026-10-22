@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "web.apps.WebConfig",
     "intake",
     "reports",
+    "pagos",
 ]
 
 MIDDLEWARE = [
@@ -108,6 +109,13 @@ CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hola@onto.xz.com.ar")
 # Cuota de informes por mes según plan
 PLAN_QUOTA = {"free": 1, "pro": 8, "estudio": 40}
 PLAN_PRICE_ARS = {"free": 0, "pro": 6900, "estudio": 24900}
+PLAN_NOMBRES = {"free": "Gratuito", "pro": "Profundo", "estudio": "Estudio"}
+
+# ------------------------- Mercado Pago -------------------------
+MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "")
+MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY", "")
+MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
+MP_API = os.environ.get("MP_API", "https://api.mercadopago.com")
 
 # ------------------------- Motor de IA -------------------------
 # La clave NUNCA se guarda en el código: se inyecta por variable de entorno.

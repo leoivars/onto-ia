@@ -42,4 +42,5 @@ urlpatterns = [
 
     path("entrevista/", include("intake.urls")),
     path("informes/", include("reports.urls")),
+    path("pagos/", include("pagos.urls")),
 ]

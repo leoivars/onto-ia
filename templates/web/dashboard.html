@@ -21,7 +21,8 @@
         <p class="tiny muted">
           {% if perfil.pro_until %}Acceso hasta {{ perfil.pro_until|date:"d/m/Y" }}{% else %}Renovación mensual{% endif %}
         </p>
-        {% if not perfil.es_pago %}<a class="btn btn-ghost btn-sm full" href="{% url 'pricing' %}">Mejorar plan</a>{% endif %}
+        {% if not perfil.es_pago %}<a class="btn btn-ghost btn-sm full" href="{% url 'pricing' %}">Mejorar plan</a>
+        {% else %}<a class="btn btn-ghost btn-sm full" href="{% url 'pagos:estado' %}">Gestionar suscripción</a>{% endif %}
       </div>
     </div>
 

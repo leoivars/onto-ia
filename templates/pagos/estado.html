@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Mis suscripciones · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Facturación</p>
+    <h1 class="h1-sm">Mis suscripciones</h1>
+
+    {% if suscripciones %}
+      {% for s in suscripciones %}
+        <div class="card">
+          <div class="review-head">
+            <h3 class="tight">Plan {{ s.plan|capfirst }}</h3>
+            <span class="chip">{{ s.get_estado_display }}</span>
+          </div>
+          <dl class="kv">
+            <dt>Importe</dt><dd>${{ s.monto }} {{ s.moneda }} por mes</dd>
+            <dt>Alta</dt><dd>{{ s.created_at|date:"d/m/Y" }}</dd>
+            {% if s.proximo_pago %}<dt>Próximo cobro</dt><dd>{{ s.proximo_pago|date:"d/m/Y" }}</dd>{% endif %}
+            <dt>Identificador</dt><dd class="tiny">{{ s.preapproval_id }}</dd>
+          </dl>
+          {% if s.estado == "authorized" %}
+            <form method="post" action="{% url 'pagos:cancelar' s.pk %}"
+                  onsubmit="return confirm('¿Cancelar la suscripción? Mantiene el acceso hasta la fecha ya pagada.');">
+              {% csrf_token %}
+              <button class="btn btn-ghost btn-sm" type="submit">Cancelar suscripción</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">No tiene suscripciones todavía.</p>
+      <a class="btn" href="{% url 'pricing' %}">Ver planes</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

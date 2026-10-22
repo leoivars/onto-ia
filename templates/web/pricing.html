@@ -34,7 +34,7 @@
           <li>Plan de 30 días con seguimiento</li>
           <li>Historial completo y exportación</li>
         </ul>
-        <a class="btn full" href="{% url 'signup' %}">Empezar</a>
+        <a class="btn full" href="{% if user.is_authenticated %}{% url 'pagos:suscribirse' 'pro' %}{% else %}{% url 'signup' %}{% endif %}">Suscribirme</a>
       </div>
 
       <div class="card plan">
@@ -47,7 +47,7 @@
           <li>Marca propia en el PDF</li>
           <li>Soporte por correo</li>
         </ul>
-        <a class="btn btn-ghost full" href="#lista-de-espera">Consultar</a>
+        <a class="btn btn-ghost full" href="{% if user.is_authenticated %}{% url 'pagos:suscribirse' 'estudio' %}{% else %}{% url 'signup' %}{% endif %}">Elegir Estudio</a>
       </div>
     </div>
 

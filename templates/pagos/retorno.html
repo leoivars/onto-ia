@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Confirmando pago · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Pago</p>
+    <h1 class="h1-sm">Estamos confirmando su pago</h1>
+    <p class="lead">Mercado Pago recibió la operación. La confirmación llega en unos segundos y el
+      plan se activa solo. Puede volver al panel; no hace falta que deje esta página abierta.</p>
+
+    {% if suscripcion %}
+      <div class="card">
+        <dl class="kv">
+          <dt>Plan</dt><dd>{{ suscripcion.plan|capfirst }}</dd>
+          <dt>Importe</dt><dd>${{ suscripcion.monto }} {{ suscripcion.moneda }}</dd>
+          <dt>Estado</dt><dd>{{ suscripcion.get_estado_display }}</dd>
+        </dl>
+      </div>
+    {% endif %}
+
+    <div class="cta-row">
+      <a class="btn" href="{% url 'panel' %}">Ir al panel</a>
+      <a class="btn btn-ghost" href="{% url 'pagos:estado' %}">Ver mis suscripciones</a>
+    </div>
+    <p class="tiny muted">Si en diez minutos no se acreditó, escriba a
+      <a href="mailto:{{ CONTACT_EMAIL }}">{{ CONTACT_EMAIL }}</a>.</p>
+  </div>
+</section>
+{% endblock %}
