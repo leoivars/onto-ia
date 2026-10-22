@@ -80,8 +80,13 @@ Verificar entregabilidad mirando el mensaje original en el cliente: `spf=pass` y
 (alineado con `onto.xz.com.ar`). Cuando eso esté confirmado y haya volumen real, pasar DMARC a
 `p=quarantine`.
 
-Para recibir en `onto.xz.com.ar` haría falta habilitar el subdominio en Cloudflare Email Routing y
-agregar los MX `route1/2/3.mx.cloudflare.net` (10/20/30). Hoy la recepción está en `xz.com.ar`.
+Para recibir en `onto.xz.com.ar` está habilitado Email Routing en el subdominio (MX `route1/2/3`
+con prioridades 23/37/75) y la regla `hola@onto.xz.com.ar → ontoxz@gmail.com`. El SPF del
+subdominio ya incluye `_spf.mx.cloudflare.net`, así que el reenvío está autorizado. El contacto
+público del sitio es esa dirección.
+
+Si en el futuro se agrega un formulario de contacto con volumen, conviene pasarlo a un Email
+Worker que lo entregue a la app en lugar de depender del reenvío a Gmail.
 
 ## Notas
 
