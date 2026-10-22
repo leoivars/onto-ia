@@ -152,6 +152,9 @@ AI_PRICE_PEAK_MULT = float(os.environ.get("AI_PRICE_PEAK_MULT", "2.0"))
 # Presupuesto de contexto por informe, en caracteres.
 AI_MAX_ANSWER_CHARS = int(os.environ.get("AI_MAX_ANSWER_CHARS", "900"))
 AI_MAX_INPUT_CHARS = int(os.environ.get("AI_MAX_INPUT_CHARS", "14000"))
+# Topes de gasto en USD. Al alcanzarlos se cae al motor local en vez de gastar.
+AI_PRESUPUESTO_USD = float(os.environ.get("AI_PRESUPUESTO_USD", "20"))
+AI_LIMITE_USUARIO_USD = float(os.environ.get("AI_LIMITE_USUARIO_USD", "0.50"))
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",

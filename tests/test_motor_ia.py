@@ -118,3 +118,29 @@ class MotorIATest(TestCase):
         Feedback.objects.create(report=primero, resonancia=5)
         ctx = engine.contexto(self.user)
         self.assertEqual(engine.elegir_modelo(self.user, ctx)[0], settings.AI_MODEL)
+
+    @override_settings(AI_PRESUPUESTO_USD=0.001)
+    def test_presupuesto_agotado_no_llama_a_la_api(self):
+        Report.objects.create(
+            user=self.user, numero=1, titulo="previo", engine="ia",
+            model_name="deepseek-flash", costo_usd=0.01, secciones=[])
+
+        permitido, motivo = engine.puede_usar_ia(self.user)
+        self.assertFalse(permitido)
+        self.assertIn("presupuesto", motivo)
+
+        with patch("reports.ai._post", return_value=PAYLOAD) as mock:
+            informe = engine.generar(self.user)
+        mock.assert_not_called()
+        self.assertEqual(informe.engine, "local")
+
+    @override_settings(AI_LIMITE_USUARIO_USD=0.0001)
+    def test_limite_por_usuario(self):
+        Report.objects.create(
+            user=self.user, numero=1, titulo="previo", engine="ia",
+            model_name="deepseek-flash", costo_usd=0.01, secciones=[])
+
+        permitido, motivo = engine.puede_usar_ia(self.user)
+        self.assertFalse(permitido)
+        self.assertIn("usuario", motivo)
+        self.assertAlmostEqual(engine.gasto_mes(self.user), 0.01, places=4)

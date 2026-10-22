@@ -4,6 +4,9 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.db.models import Avg, Count, Max, Q, Sum
 from django.db.models.functions import TruncDate
+from django.conf import settings
+
+from reports import engine as motor_ia
 
 from intake import questions as P
 
@@ -86,5 +89,10 @@ def resumen():
         "costo_hoy": float(costo_hoy),
         "por_usuario": por_usuario,
         "por_dia": por_dia,
+        "gasto_mes": round(motor_ia.gasto_mes(), 5),
+        "presupuesto": settings.AI_PRESUPUESTO_USD,
+        "pct_presupuesto": round(100 * motor_ia.gasto_mes() / settings.AI_PRESUPUESTO_USD)
+        if settings.AI_PRESUPUESTO_USD else 0,
+        "limite_usuario": settings.AI_LIMITE_USUARIO_USD,
         "hoy": hoy,
     }

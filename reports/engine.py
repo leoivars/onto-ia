@@ -103,6 +103,29 @@ def _premium_usados(user):
         created_at__year=hoy.year, created_at__month=hoy.month).count()
 
 
+def gasto_mes(user=None):
+    """Gasto en USD del mes en curso, total o de un usuario."""
+    from django.db.models import Sum
+
+    from .models import Report
+
+    hoy = timezone_nowar()
+    consulta = Report.objects.filter(
+        engine="ia", created_at__year=hoy.year, created_at__month=hoy.month)
+    if user is not None:
+        consulta = consulta.filter(user=user)
+    return float(consulta.aggregate(total=Sum("costo_usd"))["total"] or 0)
+
+
+def puede_usar_ia(user):
+    """Devuelve (permitido, motivo). Protege el presupuesto antes de llamar a la API."""
+    if gasto_mes() >= settings.AI_PRESUPUESTO_USD:
+        return False, "presupuesto mensual del sistema agotado"
+    if gasto_mes(user) >= settings.AI_LIMITE_USUARIO_USD:
+        return False, "límite mensual del usuario alcanzado"
+    return True, ""
+
+
 def timezone_nowar():
     from django.utils import timezone as tz
 
@@ -423,7 +446,11 @@ def generar(user):
     elegido, motivo = elegir_modelo(user, ctx)
     logger.info("Modelo para %s: %s (%s)", user.pk, elegido, motivo)
 
-    if ai.disponible():
+    permitido, bloqueo = puede_usar_ia(user)
+    if not permitido:
+        logger.warning("Sin llamada a IA para %s: %s", user.pk, bloqueo)
+
+    if ai.disponible() and permitido:
         try:
             texto, usage = ai.generar_informe(ctx, elegido)
             parseadas = parse_secciones(texto)
