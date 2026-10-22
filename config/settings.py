@@ -131,7 +131,9 @@ AI_MODEL = os.environ.get("AI_MODEL", "deepseek-flash")
 AI_MODEL_PREMIUM = os.environ.get("AI_MODEL_PREMIUM", "deepseek-v4-pro")
 AI_PREMIUM_CUPO = int(os.environ.get("AI_PREMIUM_CUPO", "2"))
 AI_TIMEOUT = int(os.environ.get("AI_TIMEOUT", "120"))
-AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4000"))
+AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "8000"))
+# El razonamiento interno consume la ventana de salida y trunca el informe.
+AI_THINKING = os.environ.get("AI_THINKING", "disabled")
 # Precios por millón de tokens (horario valle).
 AI_PRICE_IN = float(os.environ.get("AI_PRICE_IN", "0.15"))
 AI_PRICE_OUT = float(os.environ.get("AI_PRICE_OUT", "0.60"))

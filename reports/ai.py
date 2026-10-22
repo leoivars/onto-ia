@@ -112,10 +112,15 @@ def generar_informe(ctx, modelo=None):
             {"role": "user", "content": "\n".join(partes)},
         ],
     }
+    if settings.AI_THINKING == "disabled":
+        payload["thinking"] = {"type": "disabled"}
     try:
         data = _post(f"{settings.AI_BASE_URL.rstrip('/')}/chat/completions",
                      payload, settings.AI_TIMEOUT)
-        texto = data["choices"][0]["message"]["content"]
+        eleccion = data["choices"][0]
+        if eleccion.get("finish_reason") == "length":
+            raise AIUnavailable("respuesta truncada por límite de tokens")
+        texto = eleccion["message"]["content"]
     except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
         raise AIUnavailable(str(exc)) from exc
 
