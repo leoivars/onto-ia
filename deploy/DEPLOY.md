@@ -115,6 +115,10 @@ docker compose exec -T onto_web python manage.py correo leer 1234
 La contraseña de aplicación da acceso completo al buzón. Se revoca desde la misma pantalla de
 Google y conviene regenerarla cada tanto.
 
+**Trampa al configurar Email Routing:** si la dirección de destino todavía no está verificada,
+Cloudflare acepta el mensaje en el SMTP (`250`) pero lo descarta sin rebotar. Hay que abrir el mail
+de verificación y confirmar el destino antes de dar por buena la recepción.
+
 ## Notas
 
 - `ALLOWED_HOSTS=onto.xz.com.ar`: cualquier request con otro Host recibe 400.
