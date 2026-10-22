@@ -68,7 +68,7 @@ Guardar los backups fuera del servidor: son datos personales sensibles (Ley 25.3
 
 ## Notas
 
-- `ALLOWED_HOSTS=onto.zx.com.ar`: cualquier request con otro Host recibe 400.
+- `ALLOWED_HOSTS=onto.xz.com.ar`: cualquier request con otro Host recibe 400.
 - `DEBUG=0`: HSTS, cookies seguras y redirección a HTTPS.
 - La `AI_API_KEY` vive solo en `.env` (permiso 600) y en el entorno del contenedor.
 - Los estáticos se generan con hash dentro de la imagen y los sirve WhiteNoise.

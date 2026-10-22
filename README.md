@@ -1,6 +1,6 @@
 # Onto
 
-Coaching ontológico asistido por IA, en `https://onto.zx.com.ar`. El usuario completa una
+Coaching ontológico asistido por IA, en `https://onto.xz.com.ar`. El usuario completa una
 entrevista de 37 preguntas, el sistema escribe un informe ontológico de nueve secciones y el
 usuario lo devuelve con feedback para generar una profundización. Suscripción mensual con
 cuota de informes.

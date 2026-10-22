@@ -7,9 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-insecure-cambiar-en-produccion")
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 ALLOWED_HOSTS = [h for h in os.environ.get(
-    "ALLOWED_HOSTS", "onto.zx.com.ar,localhost,127.0.0.1,testserver").split(",") if h]
+    "ALLOWED_HOSTS", "onto.xz.com.ar,localhost,127.0.0.1,testserver").split(",") if h]
 CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", "https://onto.zx.com.ar").split(",") if o]
+    "CSRF_TRUSTED_ORIGINS", "https://onto.xz.com.ar").split(",") if o]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -102,8 +102,8 @@ LOGOUT_REDIRECT_URL = "landing"
 # ------------------------- Marca y producto -------------------------
 SITE_NAME = os.environ.get("SITE_NAME", "Onto")
 SITE_TAGLINE = "Coaching ontológico asistido por IA"
-SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "onto.zx.com.ar")
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hola@onto.zx.com.ar")
+SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "onto.xz.com.ar")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hola@onto.xz.com.ar")
 
 # Cuota de informes por mes según plan
 PLAN_QUOTA = {"free": 1, "pro": 8, "estudio": 40}

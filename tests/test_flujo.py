@@ -53,7 +53,7 @@ class FlujoCompletoTest(TestCase):
         privada = publico.get("/ingresar/").content.decode()
         self.assertIn("noindex", privada)
 
-    @override_settings(ALLOWED_HOSTS=["onto.zx.com.ar"])
+    @override_settings(ALLOWED_HOSTS=["onto.xz.com.ar"])
     def test_host_no_permitido(self):
         ajeno = Client(SERVER_NAME="otro.example")
         self.assertEqual(ajeno.get("/").status_code, 400)
