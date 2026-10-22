@@ -1,15 +1,15 @@
-# Enrutar onto.zx.com.ar por el Caddy compartido
+# Bloque de Caddy para onto.xz.com.ar
 
-El servidor tiene un único Caddy (`gateway_caddy`) escuchando 80/443 que enruta por hostname a
-los puertos altos de cada proyecto. Onto publica su web en `8020`, así que falta una sola cosa:
-un bloque en ese Caddyfile.
+Onto corre en `onto_web`, publicada en el puerto **8020** del host. El Caddy compartido
+(`gateway_caddy`) ya enruta los demás sitios por `host.docker.internal:<puerto>`, así que solo
+falta agregar este bloque.
 
-Archivo: `/home/ubuntu/gateway/Caddyfile` (fuera del espacio `~/onto`).
+**No modificar el Caddyfile desde este proyecto.** Lo aplica el responsable del gateway.
 
 ## Bloque a agregar
 
 ```
-onto.zx.com.ar {
+onto.xz.com.ar {
     tls admin@xz.com.ar
 
     reverse_proxy host.docker.internal:8020 {
@@ -19,28 +19,45 @@ onto.zx.com.ar {
 }
 ```
 
-**No importar `security_and_geoblock`.** Ese snippet responde 403 a los países que matchean
-`AR|CL|UY|BR|PY|BO|PE|EC|CO|VE`: bloquearía justamente al público argentino. Los otros sitios lo
-usan por decisión propia; Onto no debe.
+## Dos advertencias
+
+1. **No importar `security_and_geoblock`.** Ese snippet responde 403 a `AR|CL|UY|BR|PY|BO|PE|EC|CO|VE`;
+   bloquearía al público argentino, que es el objetivo del producto.
+2. **No agregar `encode` ni `file_server`**: la app ya sirve estáticos con cache headers desde
+   WhiteNoise. Un `file_server` en el medio solo genera 404.
 
 ## Aplicar
 
 ```bash
-cp /home/ubuntu/gateway/Caddyfile /home/ubuntu/gateway/Caddyfile.bak-$(date +%F)
-# editar y agregar el bloque al final
+cp /home/ubuntu/gateway/Caddyfile /home/ubuntu/gateway/Caddyfile.bak-$(date +%F-%H%M)
+# pegar el bloque al final
 docker exec gateway_caddy caddy validate --config /etc/caddy/Caddyfile
 docker exec gateway_caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
-`caddy reload` no corta las conexiones existentes de los otros sitios. Si la validación falla, el
-Caddyfile actual sigue funcionando y no hay que reiniciar nada.
+Si `validate` falla, el Caddyfile anterior sigue activo: corregir y repetir, sin reiniciar.
 
-## Cloudflare
+## Por qué ahora devuelve 525
 
-1. DNS → Add record: `A`, name `onto`, content `163.176.237.182`, **Proxied**.
-2. SSL/TLS → modo **Full (strict)** (Caddy emite Let's Encrypt por HTTP-01, que funciona detrás
-   del proxy naranja).
-3. Comprobar: `curl -I https://onto.zx.com.ar` → 200.
+`onto.xz.com.ar` ya resuelve a Cloudflare (nube naranja) y el modo SSL está en Full (strict).
+Cloudflare llega al origen y el Caddy no tiene certificado para ese hostname todavía, así que el
+handshake falla. Al agregar el bloque, Caddy pide el certificado de Let's Encrypt por HTTP-01
+(usa el puerto 80, que ya está publicado) y el 525 desaparece en menos de un minuto.
+
+## Verificación
+
+```bash
+curl -I https://onto.xz.com.ar                      # 200
+curl -s https://onto.xz.com.ar/ | grep canonical    # https://onto.xz.com.ar/
+curl -s -o /dev/null -w "%{http_code}\n" https://onto.xz.com.ar/ingresar/   # 200
+```
+
+Desde adentro del servidor, sin pasar por Cloudflare:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" \
+  -H "Host: onto.xz.com.ar" -H "X-Forwarded-Proto: https" http://127.0.0.1:8020/
+```
 
 ## Revertir
 
