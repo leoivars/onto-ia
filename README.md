@@ -9,11 +9,12 @@ Despliegue del subdominio paso a paso: [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
 
 ## Stack
 
-- Django 6.1 + SQLite (Postgres en producción)
+- Django 6.1 + Postgres 16 en Docker (SQLite para desarrollo local y tests)
 - Sin dependencias de frontend: HTML server-rendered + un CSS propio
 - Motor de IA por API compatible con OpenAI (funciona también con DeepSeek, Groq, etc.)
 - Motor local de respaldo: si no hay `AI_API_KEY`, el sitio genera un informe con plantillas
   reales para poder probar el flujo completo sin costo
+- Despliegue: `docker compose` en el servidor, detrás del Caddy compartido
 
 ## Cómo correrlo
 

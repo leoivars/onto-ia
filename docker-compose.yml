@@ -1,0 +1,44 @@
+services:
+  onto_db:
+    image: postgres:16-alpine
+    container_name: onto_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-onto}
+      POSTGRES_USER: ${DB_USER:-onto}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?falta DB_PASSWORD en .env}
+    volumes:
+      - onto_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-onto} -d ${DB_NAME:-onto}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - onto_net
+
+  onto_web:
+    build: .
+    image: onto-app:latest
+    container_name: onto_web
+    restart: unless-stopped
+    depends_on:
+      onto_db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DB_HOST: onto_db
+      DB_PORT: "5432"
+    ports:
+      - "8020:8000"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - onto_net
+
+volumes:
+  onto_db:
+
+networks:
+  onto_net:
+    name: onto_net
