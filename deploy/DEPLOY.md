@@ -72,20 +72,16 @@ El envío usa **OCI Email Delivery** por SMTP (`smtp.email.sa-saopaulo-1.oci.ora
 con las mismas credenciales del proyecto turnovip. La autenticación funciona, pero OCI solo acepta
 remitentes de dominios aprobados en la consola.
 
-Estado actual: `DEFAULT_FROM_EMAIL=Onto <agenda@turnos.xz.com.ar>`, que es la dirección aprobada.
-Para pasar a `no-responder@onto.xz.com.ar`:
+Estado actual: remitente activo `Onto <no-responder@onto.xz.com.ar>`. En Cloudflare están
+publicados el SPF (Oracle + Cloudflare), el CNAME de DKIM (`onto2026._domainkey.onto`) y DMARC en
+`p=none`. OCI tiene aprobado el dominio y el envío real fue aceptado.
 
-1. OCI → Email Delivery → Domains → agregar `onto.xz.com.ar` y verificar por TXT.
-2. Generar la DKIM del dominio nuevo (CNAME de 2048 bits).
-3. En Cloudflare, sobre `onto`:
-   - TXT SPF: `v=spf1 include:rp.oracleemaildelivery.com include:_spf.mx.cloudflare.net ~all`
-   - CNAME DKIM: el que devuelve OCI
-   - TXT DMARC: `v=DMARC1; p=none; rua=mailto:dmarc@xz.com.ar`
-4. Cambiar `DEFAULT_FROM_EMAIL` en `.env` y recrear el contenedor.
+Verificar entregabilidad mirando el mensaje original en el cliente: `spf=pass` y `dkim=pass`
+(alineado con `onto.xz.com.ar`). Cuando eso esté confirmado y haya volumen real, pasar DMARC a
+`p=quarantine`.
 
-Para **recibir** en `hola@onto.xz.com.ar`: habilitar el subdominio en Cloudflare Email Routing y
-agregar los MX `route1/2/3.mx.cloudflare.net` (10/20/30). Alternativa sin tocar nada: usar una
-dirección de `xz.com.ar` que ya esté ruteada.
+Para recibir en `onto.xz.com.ar` haría falta habilitar el subdominio en Cloudflare Email Routing y
+agregar los MX `route1/2/3.mx.cloudflare.net` (10/20/30). Hoy la recepción está en `xz.com.ar`.
 
 ## Notas
 
