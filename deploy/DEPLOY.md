@@ -66,6 +66,27 @@ gunzip -c backup-2026-10-22.sql.gz | docker compose exec -T onto_db psql -U onto
 
 Guardar los backups fuera del servidor: son datos personales sensibles (Ley 25.326).
 
+## Correo
+
+El envío usa **OCI Email Delivery** por SMTP (`smtp.email.sa-saopaulo-1.oci.oraclecloud.com:587`),
+con las mismas credenciales del proyecto turnovip. La autenticación funciona, pero OCI solo acepta
+remitentes de dominios aprobados en la consola.
+
+Estado actual: `DEFAULT_FROM_EMAIL=Onto <agenda@turnos.xz.com.ar>`, que es la dirección aprobada.
+Para pasar a `no-reply@onto.xz.com.ar`:
+
+1. OCI → Email Delivery → Domains → agregar `onto.xz.com.ar` y verificar por TXT.
+2. Generar la DKIM del dominio nuevo (CNAME de 2048 bits).
+3. En Cloudflare, sobre `onto`:
+   - TXT SPF: `v=spf1 include:rp.oracleemaildelivery.com include:_spf.mx.cloudflare.net ~all`
+   - CNAME DKIM: el que devuelve OCI
+   - TXT DMARC: `v=DMARC1; p=none; rua=mailto:dmarc@xz.com.ar`
+4. Cambiar `DEFAULT_FROM_EMAIL` en `.env` y recrear el contenedor.
+
+Para **recibir** en `hola@onto.xz.com.ar`: habilitar el subdominio en Cloudflare Email Routing y
+agregar los MX `route1/2/3.mx.cloudflare.net` (10/20/30). Alternativa sin tocar nada: usar una
+dirección de `xz.com.ar` que ya esté ruteada.
+
 ## Notas
 
 - `ALLOWED_HOSTS=onto.xz.com.ar`: cualquier request con otro Host recibe 400.
