@@ -64,6 +64,11 @@ def resumen():
         costo=Sum("costo_usd"), informes=Count("id")).order_by("-dia")[:7])
     costo_hoy = con_ia_qs.filter(created_at__date=hoy).aggregate(c=Sum("costo_usd"))["c"] or 0
 
+    from diagnostico.models import Diagnostico
+
+    diagnosticos = Diagnostico.objects.count()
+    conversiones = sum(1 for d in Diagnostico.objects.only("email") if d.conversion)
+
     return {
         "usuarios": total,
         "entrevistas_completas": completas,
@@ -94,5 +99,8 @@ def resumen():
         "pct_presupuesto": round(100 * motor_ia.gasto_mes() / settings.AI_PRESUPUESTO_USD)
         if settings.AI_PRESUPUESTO_USD else 0,
         "limite_usuario": settings.AI_LIMITE_USUARIO_USD,
+        "diagnosticos": diagnosticos,
+        "conversiones_diag": conversiones,
+        "pct_conversion_diag": round(100 * conversiones / diagnosticos) if diagnosticos else 0,
         "hoy": hoy,
     }

@@ -41,6 +41,7 @@
           <dt>Días entre informes</dt><dd>{% if m.demora_promedio %}{{ m.demora_promedio }}{% else %}—{% endif %}</dd>
           <dt>Cuentas en beta</dt><dd>{{ m.planes.pro|default:0 }} Profundo · {{ m.planes.estudio|default:0 }} Estudio</dd>
           <dt>Lista de espera</dt><dd>{{ m.leads }} correos</dd>
+          <dt>Diagnósticos</dt><dd>{{ m.diagnosticos }} pedidos · {{ m.conversiones_diag }} crearon cuenta ({{ m.pct_conversion_diag }}%)</dd>
         </dl>
       </div>
       <div class="card quiet">
