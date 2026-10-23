@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Verificación · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Seguridad</p>
+    <h1 class="h1-sm">Ingrese el código</h1>
+    <p class="lead">Abra Google Authenticator y escriba el código de seis dígitos de Onto.</p>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="field">
+        <label for="codigo">Código o clave de respaldo</label>
+        <input type="text" name="codigo" id="codigo" autocomplete="one-time-code" maxlength="12"
+               required autofocus>
+        {% if error %}<p class="err">{{ error }}</p>{% endif %}
+      </div>
+      <div class="cta-row">
+        <button class="btn" type="submit">Entrar</button>
+        <a class="btn btn-ghost" href="{% url 'logout' %}">Salir</a>
+      </div>
+      <p class="tiny muted">Si perdió el teléfono, use uno de los códigos de respaldo. Cada uno
+        sirve una sola vez.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

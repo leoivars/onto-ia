@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Códigos de respaldo · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Seguridad</p>
+    <h1 class="h1-sm">Guarde estos códigos</h1>
+    <p class="lead">Se muestran una sola vez. Cada uno sirve para entrar una vez si pierde el
+      teléfono. Guárdelos fuera del servidor y fuera del correo.</p>
+
+    <div class="card">
+      <ul class="plain-list">
+        {% for c in codigos %}<li><code>{{ c }}</code></li>{% endfor %}
+      </ul>
+    </div>
+
+    <p class="muted">Cuando los tenga anotados, continúe. Puede generar otros desde el panel más
+      adelante.</p>
+
+    <div class="cta-row">
+      <a class="btn" href="{% url 'admin:index' %}">Ir al panel</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

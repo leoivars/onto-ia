@@ -36,6 +36,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "web.visitas.VisitasMiddleware",
+    "web.seguridad.SegundoFactorMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

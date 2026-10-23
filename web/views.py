@@ -257,3 +257,69 @@ def publicacion_imagen(request, nombre):
     respuesta = FileResponse(open(ruta, "rb"), content_type="image/jpeg")
     respuesta["Cache-Control"] = "public, max-age=31536000, immutable"
     return respuesta
+
+
+# --------------------------------------------------------------- segundo factor
+
+@login_required
+def configurar_2fa(request):
+    from django.contrib.auth.hashers import make_password
+
+    from . import seguridad
+    from .models import DispositivoTOTP
+
+    if not seguridad.es_administrador(request.user):
+        return redirect("panel")
+
+    dispositivo = seguridad.dispositivo(request.user)
+    if dispositivo and dispositivo.confirmado_en:
+        request.session["otp_ok"] = True
+        return redirect(request.GET.get("next") or "admin:index")
+
+    if not dispositivo:
+        dispositivo = DispositivoTOTP.objects.create(
+            user=request.user, secreto=seguridad.nuevo_secreto())
+
+    error = ""
+    if request.method == "POST":
+        if seguridad.codigo_valido(dispositivo.secreto, request.POST.get("codigo")):
+            claros, hashes = seguridad.generar_respaldo()
+            dispositivo.confirmado_en = timezone.now()
+            dispositivo.codigos_respaldo = hashes
+            dispositivo.save(update_fields=["confirmado_en", "codigos_respaldo"])
+            request.session["otp_ok"] = True
+            return render(request, "web/2fa_respaldo.html", {"codigos": claros})
+        error = "El código no coincide. Revise la hora del teléfono y pruebe otra vez."
+
+    uri = seguridad.uri_otpauth(request.user, dispositivo.secreto)
+    return render(request, "web/2fa_configurar.html", {
+        "qr": seguridad.qr_data_uri(uri), "secreto": dispositivo.secreto, "error": error,
+        "next": request.GET.get("next", ""),
+    })
+
+
+@login_required
+def verificar_2fa(request):
+    from . import seguridad
+
+    dispositivo = seguridad.dispositivo(request.user)
+    if not dispositivo or not dispositivo.confirmado_en:
+        return redirect("2fa_configurar")
+
+    error = ""
+    if request.method == "POST":
+        codigo = request.POST.get("codigo")
+        if seguridad.codigo_valido(dispositivo.secreto, codigo) or \
+                seguridad.consumir_respaldo(dispositivo, codigo):
+            request.session["otp_ok"] = True
+            if not seguridad.codigo_valido(dispositivo.secreto, codigo):
+                dispositivo.ultimo_uso = timezone.now()
+                dispositivo.save(update_fields=["ultimo_uso"])
+            siguiente = request.POST.get("next") or ""
+            if siguiente.startswith("/"):
+                return redirect(siguiente)
+            return redirect("admin:index")
+        error = "Código incorrecto o vencido."
+
+    return render(request, "web/2fa_verificar.html", {"error": error,
+                                                      "next": request.GET.get("next", "")})

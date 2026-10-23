@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Segundo factor · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Seguridad</p>
+    <h1 class="h1-sm">Active el segundo factor</h1>
+    <p class="lead">Su cuenta puede ver datos de todos los consultantes. Además de la contraseña,
+      va a necesitar un código de seis dígitos que cambia cada treinta segundos.</p>
+
+    <ol class="numbered">
+      <li>Instale Google Authenticator, Authy o 1Password en el teléfono.</li>
+      <li>Escanee este código desde la app.</li>
+      <li>Escriba abajo el código de seis dígitos que aparece.</li>
+    </ol>
+
+    <div class="card" style="text-align:center; margin: 24px 0;">
+      <img src="{{ qr }}" alt="Código QR para el autenticador" width="220" height="220">
+      <p class="tiny muted" style="margin-top:12px;">Si no puede escanear, cargue esta clave a mano:<br>
+        <code>{{ secreto }}</code></p>
+    </div>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      <div class="field">
+        <label for="codigo">Código de seis dígitos</label>
+        <input type="text" name="codigo" id="codigo" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="7" required autofocus>
+        {% if error %}<p class="err">{{ error }}</p>{% endif %}
+      </div>
+      <div class="cta-row">
+        <button class="btn" type="submit">Activar</button>
+        <a class="btn btn-ghost" href="{% url 'logout' %}">Salir</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

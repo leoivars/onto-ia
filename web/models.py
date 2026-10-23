@@ -242,3 +242,23 @@ class MetricaPublicacion(models.Model):
     @property
     def guardados_por_mil(self):
         return round(1000 * self.guardados / self.alcance) if self.alcance else 0
+
+
+class DispositivoTOTP(models.Model):
+    """Segundo factor de los administradores: TOTP compatible con Google Authenticator."""
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name="totp")
+    secreto = models.CharField(max_length=64)
+    confirmado_en = models.DateTimeField(null=True, blank=True)
+    codigos_respaldo = models.JSONField(default=list, blank=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    ultimo_uso = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "segundo factor"
+        verbose_name_plural = "segundos factores"
+
+    def __str__(self):
+        estado = "activo" if self.confirmado_en else "sin confirmar"
+        return f"{self.user} · {estado}"

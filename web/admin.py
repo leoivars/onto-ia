@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
-from .models import InviteCode, Lead, Profile, Publicacion
+from .models import DispositivoTOTP, InviteCode, Lead, Profile, Publicacion
 
 
 @admin.register(Profile)
@@ -93,3 +93,26 @@ class PublicacionAdmin(admin.ModelAdmin):
     @admin.action(description="Descartar")
     def descartar(self, request, queryset):
         queryset.update(estado="descartada")
+
+
+@admin.register(DispositivoTOTP)
+class DispositivoTOTPAdmin(admin.ModelAdmin):
+    list_display = ("user", "activo", "creado", "ultimo_uso", "respaldos")
+    readonly_fields = ("user", "secreto", "confirmado_en", "creado", "ultimo_uso",
+                       "codigos_respaldo")
+    actions = ("resetear",)
+
+    @admin.display(description="activo", boolean=True)
+    def activo(self, obj):
+        return bool(obj.confirmado_en)
+
+    @admin.display(description="respaldos restantes")
+    def respaldos(self, obj):
+        return len(obj.codigos_respaldo or [])
+
+    @admin.action(description="Resetear el segundo factor (obliga a configurarlo de nuevo)")
+    def resetear(self, request, queryset):
+        for dispositivo in queryset:
+            DispositivoTOTP.objects.filter(pk=dispositivo.pk).delete()
+        self.message_user(request, "Reseteado: esos usuarios deberán configurarlo al entrar.",
+                          messages.WARNING)

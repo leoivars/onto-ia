@@ -1,5 +1,7 @@
 Django==6.1.2
 whitenoise==6.11.0
 Pillow==11.3.0
+pyotp==2.9.0
+qrcode[pil]==8.2
 gunicorn==23.0.0
 psycopg[binary]>=3.2,<3.3
