@@ -1,5 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Panel · {{ SITE_NAME }}{% endblock %}
+{% block title %}Panel · {{ SITE_NAME }}
+<div class="modal-zoom" id="modal-zoom" hidden>
+  <button type="button" class="modal-cerrar" aria-label="Cerrar">×</button>
+  <img id="modal-imagen" alt="">
+  <p class="modal-titulo" id="modal-titulo"></p>
+</div>
+
+<style>
+  .miniatura { padding:0; border:1px solid #e3ddd1; background:none; cursor:zoom-in; display:block;
+               width:100%; max-width:220px; margin-bottom:12px; line-height:0; }
+  .miniatura img { width:100%; height:auto; display:block; }
+  .modal-zoom { position:fixed; inset:0; z-index:99; background:rgba(28,36,30,.92);
+                display:flex; flex-direction:column; align-items:center; justify-content:center;
+                gap:14px; padding:24px; }
+  .modal-zoom[hidden] { display:none; }
+  .modal-zoom img { max-height:78vh; max-width:min(92vw,520px); width:auto; height:auto;
+                    box-shadow:0 20px 60px rgba(0,0,0,.45); }
+  .modal-titulo { color:#f4efe3; font-size:13px; letter-spacing:.04em; margin:0; }
+  .modal-cerrar { position:absolute; top:16px; right:20px; background:none; border:0; color:#f4efe3;
+                  font-size:38px; line-height:1; cursor:pointer; }
+</style>
+
+<script>
+  (function () {
+    var modal = document.getElementById("modal-zoom");
+    if (!modal) return;
+    var imagen = document.getElementById("modal-imagen");
+    var titulo = document.getElementById("modal-titulo");
+    function abrir(url, nombre) {
+      imagen.src = url; imagen.alt = nombre; titulo.textContent = nombre;
+      modal.hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+    function cerrar() {
+      modal.hidden = true; imagen.src = ""; document.body.style.overflow = "";
+    }
+    document.querySelectorAll(".miniatura").forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        abrir(boton.dataset.imagen, boton.dataset.titulo);
+      });
+    });
+    modal.addEventListener("click", function (evento) {
+      if (evento.target === modal || evento.target.classList.contains("modal-cerrar")) cerrar();
+    });
+    document.addEventListener("keydown", function (evento) {
+      if (evento.key === "Escape" && !modal.hidden) cerrar();
+    });
+  })();
+</script>
+{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 
 {% block content %}
@@ -90,8 +139,10 @@
     <div class="grid-2">
       {% for h in historias %}
         <div class="card">
-          <img src="https://{{ SITE_DOMAIN }}/ig/{{ h.nombre }}.jpg?v={{ h.version }}" alt="{{ h.nombre }}"
-               style="width:100%; max-width:220px; display:block; margin-bottom:12px; border:1px solid #e3ddd1;">
+          <button type="button" class="miniatura" data-imagen="https://{{ SITE_DOMAIN }}/ig/{{ h.nombre }}.jpg?v={{ h.version }}"
+                  data-titulo="{{ h.nombre }}">
+            <img src="https://{{ SITE_DOMAIN }}/ig/{{ h.nombre }}.jpg?v={{ h.version }}" alt="{{ h.nombre }}">
+          </button>
           <p class="small" style="margin:0 0 10px;">{{ h.nombre }}</p>
           <form method="post">{% csrf_token %}
             <input type="hidden" name="accion" value="historia">

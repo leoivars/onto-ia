@@ -28,7 +28,7 @@ class GestionTest(TestCase):
         self._entrar()
         respuesta = self.client.get("/gestion/")
         self.assertEqual(respuesta.status_code, 200)
-        for texto in ("Instagram", "Historias", "Sistema", "Publicaciones", "Informes en cola"):
+        for texto in ("Instagram", "Historias", "Sistema", "Publicaciones", "Informes en cola", "modal-zoom"):
             self.assertContains(respuesta, texto)
 
     def test_cuenta_los_borradores(self):
@@ -58,3 +58,27 @@ class GestionTest(TestCase):
         respuesta = self.client.get("/gestion/")
         nombres = [h["nombre"] for h in respuesta.context["historias"]]
         self.assertIn("historia-prueba", nombres)
+
+    def test_publicar_historia_manda_la_version_vigente(self):
+        """El POST de una historia no debe romperse y debe mandar la imagen actual."""
+        import os
+        from unittest.mock import patch
+        from django.conf import settings as cfg
+
+        carpeta = os.path.join(cfg.MEDIA_ROOT, "publicaciones")
+        os.makedirs(carpeta, exist_ok=True)
+        ruta = os.path.join(carpeta, "historia-que-es.jpg")
+        with open(ruta, "wb") as f:
+            f.write(b"\xff\xd8\xff" + b"0" * 40)
+
+        self._entrar()
+        with patch("web.instagram.crear_contenedor", return_value="c1") as crear, \
+             patch("web.instagram.esperar_listo"), \
+             patch("web.instagram.publicar"):
+            respuesta = self.client.post("/gestion/",
+                                         {"accion": "historia", "archivo": "historia-que-es"})
+
+        self.assertEqual(respuesta.status_code, 302)
+        url = crear.call_args[0][0]
+        self.assertIn("historia-que-es.jpg?v=", url)
+        self.assertIn(f"v={int(os.stat(ruta).st_mtime)}", url)

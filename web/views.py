@@ -437,6 +437,8 @@ def gestion(request):
     from .metricas import resumen as resumen_metricas
     from .models import EmailSecuencia, Lead, Publicacion
 
+    carpeta = Path(cfg.MEDIA_ROOT) / "publicaciones"
+
     if request.method == "POST":
         accion = request.POST.get("accion")
         if accion == "historia":
@@ -456,7 +458,6 @@ def gestion(request):
                     messages.error(request, f"No se pudo publicar: {exc}")
             return redirect("gestion")
 
-    carpeta = Path(cfg.MEDIA_ROOT) / "publicaciones"
     # La versión sale del mtime: así el panel no muestra una imagen vieja por caché.
     historias = [{"nombre": p.stem, "version": int(p.stat().st_mtime)}
                  for p in sorted(carpeta.glob("historia-*.jpg"))]
