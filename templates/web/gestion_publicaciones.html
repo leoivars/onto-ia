@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Publicaciones · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Contenido</p>
+    <h1 class="h1-sm">Publicaciones de Instagram</h1>
+
+    <div class="tabs" style="display:flex; gap:8px; flex-wrap:wrap; margin:20px 0 28px;">
+      <a class="btn btn-sm {% if estado == 'borrador' %}{% else %}btn-ghost{% endif %}"
+         href="?estado=borrador">Borradores ({{ conteos.borrador }})</a>
+      <a class="btn btn-sm {% if estado == 'aprobada' %}{% else %}btn-ghost{% endif %}"
+         href="?estado=aprobada">Aprobadas ({{ conteos.aprobada }})</a>
+      <a class="btn btn-sm {% if estado == 'publicada' %}{% else %}btn-ghost{% endif %}"
+         href="?estado=publicada">Publicadas ({{ conteos.publicada }})</a>
+      <a class="btn btn-sm {% if estado == 'descartada' %}{% else %}btn-ghost{% endif %}"
+         href="?estado=descartada">Descartadas ({{ conteos.descartada }})</a>
+      <a class="btn btn-sm btn-ghost" href="{% url 'metricas' %}">Métricas</a>
+    </div>
+
+    {% if not tarjetas %}
+      <p class="muted">No hay publicaciones en este estado.</p>
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:22px;">
+      {% for t in tarjetas %}
+        <div class="card" style="padding:0; overflow:hidden;">
+          <a href="{{ t.p.imagen_url }}" target="_blank">
+            <img src="{{ t.p.imagen_url }}" alt="{{ t.p.texto }}"
+                 style="width:100%; display:block; aspect-ratio:4/5; object-fit:cover;">
+          </a>
+          <div style="padding:18px;">
+            <p style="margin:0 0 10px; font-weight:600; line-height:1.35;">{{ t.p.texto }}</p>
+
+            {% if t.parecido >= 0.6 %}
+              <p class="tiny" style="color:#a33; margin:0 0 8px;">Se repite {{ t.parecido|floatformat:0 }}%
+                con «{{ t.parecido_con }}»</p>
+            {% elif t.parecido >= 0.35 %}
+              <p class="tiny" style="color:#a70; margin:0 0 8px;">Se parece a «{{ t.parecido_con }}»</p>
+            {% endif %}
+
+            {% if t.p.caption %}
+              <details style="margin:0 0 12px;">
+                <summary class="tiny muted">Ver texto del post</summary>
+                <p class="tiny" style="white-space:pre-line;">{{ t.p.caption }}</p>
+              </details>
+            {% endif %}
+
+            {% if t.p.estado == "aprobada" %}
+              <p class="tiny muted">Programada: {{ t.p.programada|date:"d/m/Y H:i" }}</p>
+            {% endif %}
+            {% if t.p.estado == "publicada" %}
+              <p class="tiny muted">Publicada {{ t.p.publicada_en|date:"d/m/Y H:i" }}</p>
+              {% if t.p.permalink %}
+                <p class="tiny"><a href="{{ t.p.permalink }}" target="_blank">Ver en Instagram</a></p>
+              {% endif %}
+            {% endif %}
+            {% if t.p.error %}
+              <p class="tiny" style="color:#a33;">{{ t.p.error|truncatechars:120 }}</p>
+            {% endif %}
+
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+              {% if t.p.estado == "borrador" or t.p.estado == "error" %}
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="aprobar">
+                  <input type="hidden" name="dias" value="1">
+                  <button class="btn btn-sm" type="submit">Aprobar mañana 10:00</button>
+                </form>
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="aprobar">
+                  <input type="hidden" name="dias" value="2">
+                  <button class="btn btn-sm btn-ghost" type="submit">En 2 días</button>
+                </form>
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="publicar">
+                  <button class="btn btn-sm btn-ghost" type="submit">Publicar ahora</button>
+                </form>
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="descartar">
+                  <button class="btn btn-sm btn-danger" type="submit">Descartar</button>
+                </form>
+              {% elif t.p.estado == "aprobada" %}
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="publicar">
+                  <button class="btn btn-sm" type="submit">Publicar ahora</button>
+                </form>
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="borrador">
+                  <button class="btn btn-sm btn-ghost" type="submit">Volver a borrador</button>
+                </form>
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="descartar">
+                  <button class="btn btn-sm btn-danger" type="submit">Descartar</button>
+                </form>
+              {% elif t.p.estado == "descartada" %}
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="pk" value="{{ t.p.pk }}">
+                  <input type="hidden" name="accion" value="borrador">
+                  <button class="btn btn-sm btn-ghost" type="submit">Recuperar</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

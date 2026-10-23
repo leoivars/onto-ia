@@ -46,12 +46,13 @@ class PublicacionAdmin(admin.ModelAdmin):
         from .analitica_ig import parecido
 
         otra, valor = parecido(obj)
+        texto = f"{valor:.0%}"
         if valor >= 0.6:
-            return format_html('<span style="color:#a33">se repite {:.0%} con «{}»</span>',
-                               valor, otra.nombre)
+            return format_html('<span style="color:#a33">se repite {} con «{}»</span>',
+                               texto, otra.nombre)
         if valor >= 0.35:
-            return format_html('<span style="color:#a70">se parece {:.0%} a «{}»</span>',
-                               valor, otra.nombre)
+            return format_html('<span style="color:#a70">se parece {} a «{}»</span>',
+                               texto, otra.nombre)
         return "distinto"
 
     @admin.display(description="tarjeta")

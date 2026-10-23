@@ -101,7 +101,7 @@ class SegundoFactorMiddleware:
 
 # ------------------------------------------------------------- lista blanca de IP
 
-RUTAS_PROTEGIDAS = ("/admin/", "/metricas/", "/seguridad/")
+RUTAS_PROTEGIDAS = ("/admin/", "/metricas/", "/seguridad/", "/gestion/")
 
 
 def ip_cliente(request):

@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
 
@@ -357,3 +358,60 @@ def mi_ip(request):
     from .seguridad import ip_cliente
 
     return render(request, "web/mi_ip.html", {"ip": ip_cliente(request)})
+
+
+# --------------------------------------------------------------- gestión de contenido
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def gestion_publicaciones(request):
+    """Panel propio para revisar, aprobar y descartar las tarjetas de Instagram."""
+    from . import analitica_ig
+    from .models import Publicacion
+    from .publicaciones import programar, publicar
+
+    if request.method == "POST":
+        accion = request.POST.get("accion", "")
+        pk = request.POST.get("pk")
+        publicacion = Publicacion.objects.filter(pk=pk).first()
+        if not publicacion:
+            messages.error(request, "No encontramos esa publicación.")
+            return redirect("gestion_publicaciones")
+
+        if accion == "aprobar":
+            dias = int(request.POST.get("dias") or 1)
+            programar(publicacion, dias=dias)
+            messages.success(request, f"«{publicacion.nombre}» queda para publicar en {dias} día(s).")
+        elif accion == "publicar":
+            publicar(publicacion)
+            if publicacion.estado == "publicada":
+                messages.success(request, f"Publicado: {publicacion.permalink}")
+            else:
+                messages.error(request, f"No se pudo publicar: {publicacion.error}")
+        elif accion == "descartar":
+            publicacion.estado = "descartada"
+            publicacion.save(update_fields=["estado", "actualizado"])
+            messages.warning(request, f"«{publicacion.nombre}» descartada.")
+        elif accion == "borrador":
+            publicacion.estado = "borrador"
+            publicacion.programada = None
+            publicacion.save(update_fields=["estado", "programada", "actualizado"])
+            messages.info(request, f"«{publicacion.nombre}» vuelve a borrador.")
+        return redirect(f"{reverse('gestion_publicaciones')}?estado={request.POST.get('volver', 'borrador')}")
+
+    estado = request.GET.get("estado", "borrador")
+    if estado not in ("borrador", "aprobada", "publicada", "descartada", "error"):
+        estado = "borrador"
+
+    tarjetas = []
+    for publicacion in Publicacion.objects.filter(estado=estado):
+        otra, valor = analitica_ig.parecido(publicacion)
+        tarjetas.append({"p": publicacion, "parecido": valor,
+                         "parecido_con": otra.nombre if otra else ""})
+
+    conteos = {clave: Publicacion.objects.filter(estado=clave).count() for clave in
+               ("borrador", "aprobada", "publicada", "descartada")}
+    return render(request, "web/gestion_publicaciones.html", {
+        "tarjetas": tarjetas, "estado": estado, "conteos": conteos,
+        "total": sum(conteos.values()),
+    })
