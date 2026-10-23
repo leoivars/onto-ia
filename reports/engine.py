@@ -457,8 +457,13 @@ def generar(user):
                 secciones, motor, modelo = parseadas, "ia", elegido
                 tokens_in, tokens_out = usage["in"], usage["out"]
                 tokens_cache = usage.get("cache", 0)
+        except ai.SinCreditos:
+            # Sin saldo: no se inventa un informe local. El llamador decide encolar.
+            raise
         except ai.AIUnavailable as exc:
             logger.warning("Motor de IA no disponible: %s", exc)
+    elif ai.disponible() and not permitido:
+        raise ai.SinCreditos(bloqueo)
 
     if not secciones:
         secciones = _local(ctx)

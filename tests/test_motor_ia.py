@@ -129,10 +129,13 @@ class MotorIATest(TestCase):
         self.assertFalse(permitido)
         self.assertIn("presupuesto", motivo)
 
+        # Sin presupuesto no se llama a la API y tampoco se inventa un informe local:
+        # se levanta SinCreditos para que el pedido vaya a la cola.
         with patch("reports.ai._post", return_value=PAYLOAD) as mock:
-            informe = engine.generar(self.user)
+            with self.assertRaises(ai.SinCreditos):
+                engine.generar(self.user)
         mock.assert_not_called()
-        self.assertEqual(informe.engine, "local")
+        self.assertEqual(Report.objects.count(), 1)
 
     @override_settings(AI_LIMITE_USUARIO_USD=0.0001)
     def test_limite_por_usuario(self):

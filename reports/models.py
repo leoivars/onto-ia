@@ -51,3 +51,34 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Devolución {self.resonancia}/5 · informe #{self.report.numero}"
+
+
+class InformeEnCola(models.Model):
+    """Pedido de informe que no se pudo generar por falta de créditos de IA.
+
+    Se reintenta solo y se avisa por correo cuando sale. El usuario nunca pierde el pedido.
+    """
+
+    ESTADOS = [
+        ("pendiente", "En cola"),
+        ("listo", "Generado"),
+        ("cancelado", "Cancelado"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="informes_en_cola")
+    estado = models.CharField(max_length=10, choices=ESTADOS, default="pendiente", db_index=True)
+    motivo = models.TextField(blank=True)
+    intentos = models.PositiveIntegerField(default=0)
+    ultimo_error = models.TextField(blank=True)
+    report = models.ForeignKey(Report, null=True, blank=True, on_delete=models.SET_NULL)
+    creado = models.DateTimeField(auto_now_add=True)
+    procesado_en = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("creado",)
+        verbose_name = "informe en cola"
+        verbose_name_plural = "informes en cola"
+
+    def __str__(self):
+        return f"{self.user} · {self.get_estado_display()}"

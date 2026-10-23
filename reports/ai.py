@@ -9,6 +9,10 @@ class AIUnavailable(Exception):
     pass
 
 
+class SinCreditos(AIUnavailable):
+    """El proveedor rechazó la llamada por saldo, cuota o presupuesto interno."""
+
+
 def disponible():
     return bool(settings.AI_API_KEY)
 
@@ -45,7 +49,19 @@ def completar(sistema, usuario, modelo=None, max_tokens=None):
         if eleccion.get("finish_reason") == "length":
             raise AIUnavailable("respuesta truncada por límite de tokens")
         texto = eleccion["message"]["content"]
-    except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
+    except urllib.error.HTTPError as exc:
+        detalle = ""
+        try:
+            detalle = exc.read().decode("utf-8", "ignore")[:300]
+        except Exception:
+            pass
+        texto = f"{exc.code} {detalle}"
+        if exc.code == 402 or any(p in detalle.lower() for p in
+                                  ("insufficient", "quota", "balance", "credit", "billing")):
+            raise SinCreditos(texto) from exc
+        raise AIUnavailable(texto) from exc
+    except (urllib.error.URLError, KeyError, IndexError, TimeoutError,
+            json.JSONDecodeError) as exc:
         raise AIUnavailable(str(exc)) from exc
 
     usage = data.get("usage") or {}
@@ -159,7 +175,19 @@ def generar_informe(ctx, modelo=None):
         if eleccion.get("finish_reason") == "length":
             raise AIUnavailable("respuesta truncada por límite de tokens")
         texto = eleccion["message"]["content"]
-    except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
+    except urllib.error.HTTPError as exc:
+        detalle = ""
+        try:
+            detalle = exc.read().decode("utf-8", "ignore")[:300]
+        except Exception:
+            pass
+        texto = f"{exc.code} {detalle}"
+        if exc.code == 402 or any(p in detalle.lower() for p in
+                                  ("insufficient", "quota", "balance", "credit", "billing")):
+            raise SinCreditos(texto) from exc
+        raise AIUnavailable(texto) from exc
+    except (urllib.error.URLError, KeyError, IndexError, TimeoutError,
+            json.JSONDecodeError) as exc:
         raise AIUnavailable(str(exc)) from exc
 
     usage = data.get("usage") or {}

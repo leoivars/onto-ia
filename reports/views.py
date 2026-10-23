@@ -11,7 +11,9 @@ from intake.utils import entrevista_cambiada
 from web.models import perfil_de
 
 from . import engine
-from .models import Feedback, Report
+from . import cola as cola_mod
+from . import ai
+from .models import Feedback, InformeEnCola, Report
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +56,25 @@ def generar(request):
                 "éste o modifique la entrevista; así el segundo aporta algo distinto.")
             return redirect("reports:detalle", pk=ultimo.pk)
 
+    cola_previa = InformeEnCola.objects.filter(user=request.user, estado="pendiente").first()
+    if cola_previa:
+        messages.info(
+            request,
+            "Su informe ya está en cola. Estamos con un problema técnico en el motor de "
+            "escritura y lo estamos resolviendo; apenas se restablezca lo generamos y le "
+            "avisamos por correo. No hace falta pedirlo de nuevo.")
+        return redirect("panel")
+
     try:
         informe = engine.generar(request.user)
+    except ai.SinCreditos as exc:
+        cola, _ = cola_mod.encolar(request.user, str(exc))
+        messages.warning(
+            request,
+            "Su informe quedó en cola. En este momento el motor de escritura no está disponible "
+            "y estamos trabajando para solucionarlo a la brevedad. Le avisamos por correo en "
+            "cuanto esté listo: no hace falta que vuelva a pedirlo.")
+        return redirect("panel")
     except Exception:
         logger.exception("Falló la generación de informe para %s", request.user.pk)
         messages.error(request, "No pudimos escribir el informe. Intente de nuevo en unos minutos.")
