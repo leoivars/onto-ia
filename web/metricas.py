@@ -151,3 +151,51 @@ def trafico(dias=30):
         "pct_diag": round(100 * total_diag / sesiones) if sesiones else 0,
         "pct_reg": round(100 * total_reg / total_diag) if total_diag else 0,
     }
+
+
+def historico(meses=12):
+    """Serie mensual a partir de los agregados: sirve para comparar temporadas."""
+    from datetime import timedelta
+
+    from django.db.models.functions import TruncMonth
+    from django.utils import timezone as tz
+
+    from diagnostico.models import Diagnostico
+
+    from .models import ResumenDiario
+
+    hoy = tz.localdate()
+    inicio = hoy.replace(day=1)
+    for _ in range(meses - 1):
+        inicio = (inicio - timedelta(days=1)).replace(day=1)
+
+    visitas = {
+        (f["mes"].year, f["mes"].month): {"vistas": f["vistas"], "sesiones": f["sesiones"]}
+        for f in ResumenDiario.objects.filter(fecha__gte=inicio)
+        .annotate(mes=TruncMonth("fecha"))
+        .values("mes").annotate(vistas=Sum("vistas"), sesiones=Sum("sesiones"))
+    }
+    diags = {
+        (f["mes"].year, f["mes"].month): f["n"]
+        for f in Diagnostico.objects.filter(created_at__date__gte=inicio)
+        .annotate(mes=TruncMonth("created_at")).values("mes").annotate(n=Count("id"))
+    }
+    regs = {
+        (f["mes"].year, f["mes"].month): f["n"]
+        for f in Profile.objects.filter(created_at__date__gte=inicio)
+        .annotate(mes=TruncMonth("created_at")).values("mes").annotate(n=Count("id"))
+    }
+
+    serie, cursor = [], inicio
+    for _ in range(meses):
+        clave = (cursor.year, cursor.month)
+        serie.append({
+            "etiqueta": cursor.strftime("%m/%Y"),
+            "vistas": visitas.get(clave, {}).get("vistas", 0),
+            "sesiones": visitas.get(clave, {}).get("sesiones", 0),
+            "diagnosticos": diags.get(clave, 0),
+            "registros": regs.get(clave, 0),
+        })
+        cursor = (cursor + timedelta(days=32)).replace(day=1)
+
+    return serie

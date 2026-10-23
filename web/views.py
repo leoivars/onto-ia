@@ -20,7 +20,7 @@ from reports.models import Report
 
 from .forms import LeadForm, SignupForm
 from .metricas import resumen as resumen_metricas
-from .metricas import trafico
+from .metricas import historico, trafico
 from .models import InviteCode, Lead, perfil_de
 from .visitas import origen_de
 
@@ -98,6 +98,7 @@ def account(request):
 def metricas(request):
     datos = resumen_metricas()
     datos["trafico"] = trafico()
+    datos["historico"] = historico()
     return render(request, "web/metricas.html", {"m": datos})
 
 

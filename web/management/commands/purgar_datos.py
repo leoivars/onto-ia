@@ -30,7 +30,6 @@ class Command(BaseCommand):
         diag = Diagnostico.objects.filter(created_at__lt=corte_diag)
         leads = Lead.objects.filter(created_at__lt=corte_lead)
         visitas = Visita.objects.filter(creada__lt=corte_visita)
-
         if opciones["dry_run"]:
             self.stdout.write(f"[dry-run] diagnósticos a borrar: {diag.count()}")
             self.stdout.write(f"[dry-run] leads a borrar: {leads.count()}")
@@ -39,6 +38,11 @@ class Command(BaseCommand):
 
         n_diag, _ = diag.delete()
         n_leads, _ = leads.delete()
+        # Antes de borrar el detalle, se guarda el agregado del día: la serie histórica queda.
+        from web.agregados import agregar_dia
+
+        for fecha in visitas.values_list("creada__date", flat=True).distinct():
+            agregar_dia(fecha)
         n_visitas, _ = visitas.delete()
         self.stdout.write(self.style.SUCCESS(
             f"Borrados {n_diag} diagnósticos, {n_leads} leads y {n_visitas} visitas vencidas."))

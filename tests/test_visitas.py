@@ -1,6 +1,9 @@
 """Medición propia: visitas, origen y atribución hasta el registro."""
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from diagnostico.models import Diagnostico
 from web.models import Visita, perfil_de
@@ -52,3 +55,45 @@ class VisitasTest(TestCase):
         user = User.objects.filter(email="leo@ejemplo.test").first()
         if user:
             self.assertEqual(perfil_de(user).origen, "linkedin/social")
+
+
+class AgregadosTest(TestCase):
+    def test_agregar_dia_es_idempotente(self):
+        from web.agregados import agregar_dia
+        from web.models import ResumenDiario
+
+        Visita.objects.create(ruta="/", origen="instagram", sesion="a" * 32)
+        Visita.objects.create(ruta="/", origen="instagram", sesion="a" * 32)
+        Visita.objects.create(ruta="/precios/", origen="instagram", sesion="b" * 32)
+        hoy = timezone.localdate()
+
+        agregar_dia(hoy)
+        agregar_dia(hoy)
+
+        filas = ResumenDiario.objects.filter(fecha=hoy)
+        self.assertEqual(filas.count(), 2)
+        home = filas.get(ruta="/")
+        self.assertEqual(home.vistas, 2)
+        self.assertEqual(home.sesiones, 1)
+
+    def test_purgar_guarda_el_agregado_antes_de_borrar(self):
+        from django.core.management import call_command
+        from web.models import ResumenDiario
+
+        vieja = Visita.objects.create(ruta="/", origen="google", sesion="c" * 32)
+        Visita.objects.filter(pk=vieja.pk).update(creada=timezone.now() - timedelta(days=120))
+        fecha = timezone.localtime(
+            Visita.objects.get(pk=vieja.pk).creada).date()
+
+        call_command("purgar_datos")
+
+        self.assertFalse(Visita.objects.filter(pk=vieja.pk).exists())
+        self.assertTrue(ResumenDiario.objects.filter(fecha=fecha, origen="google").exists())
+
+    def test_historico_devuelve_doce_meses(self):
+        from web.metricas import historico
+
+        serie = historico()
+        self.assertEqual(len(serie), 12)
+        self.assertIn("vistas", serie[0])
+        self.assertIn("registros", serie[-1])

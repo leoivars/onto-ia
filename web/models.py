@@ -153,3 +153,28 @@ class EmailSecuencia(models.Model):
 
     def __str__(self):
         return f"{self.email} · paso {self.paso}"
+
+
+class ResumenDiario(models.Model):
+    """Agregado diario de visitas: se conserva para siempre, sin identificadores.
+
+    Es lo que permite comparar temporadas y años sin guardar el recorrido de nadie.
+    """
+
+    fecha = models.DateField(db_index=True)
+    origen = models.CharField(max_length=60, default="directo")
+    ruta = models.CharField(max_length=120, default="/")
+    vistas = models.PositiveIntegerField(default=0)
+    sesiones = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ("-fecha",)
+        verbose_name = "resumen diario"
+        verbose_name_plural = "resúmenes diarios"
+        constraints = [
+            models.UniqueConstraint(fields=["fecha", "origen", "ruta"],
+                                    name="un_resumen_por_dia_origen_ruta"),
+        ]
+
+    def __str__(self):
+        return f"{self.fecha} · {self.origen} · {self.ruta}: {self.vistas}"
