@@ -113,6 +113,8 @@ def trafico(dias=30):
 
     from django.utils import timezone as tz
 
+    from diagnostico.models import Diagnostico
+
     from .models import Visita
 
     desde = tz.now() - timedelta(days=dias)

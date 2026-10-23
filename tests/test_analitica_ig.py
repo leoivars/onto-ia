@@ -63,3 +63,23 @@ class MetricasTest(TestCase):
 
     def test_sin_metricas_lo_dice(self):
         self.assertIn("Todavía no hay métricas", analitica_ig.resumen()["lectura"])
+
+
+class PanelMetricasTest(TestCase):
+    """El panel es solo para staff, así que necesita su propia prueba de humo."""
+
+    def test_panel_responde(self):
+        from django.contrib.auth.models import User
+        from django.test import Client, override_settings
+
+        staff = User.objects.create_user("jefe", email="jefe@ejemplo.test",
+                                         password="clave-larga-123", is_staff=True)
+        cliente = Client()
+        cliente.force_login(staff)
+        sesion = cliente.session
+        sesion["otp_ok"] = True
+        sesion.save()
+        with override_settings(ADMIN_IPS=["127.0.0.1"]):
+            respuesta = cliente.get("/metricas/")
+        assert respuesta.status_code == 200
+        assert "Embudo" in respuesta.content.decode()
