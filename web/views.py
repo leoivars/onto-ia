@@ -25,6 +25,13 @@ def landing(request):
     return render(request, "web/landing.html", {"bloques": Q.BLOCKS})
 
 
+def ayuda_view(request):
+    from .ayuda import LINEAS, texto_derivacion
+
+    return render(request, "web/ayuda.html", {
+        "lineas": LINEAS, "derivacion": texto_derivacion()})
+
+
 def pricing(request):
     form = LeadForm(request.POST or None)
     if request.method == "POST" and form.is_valid():

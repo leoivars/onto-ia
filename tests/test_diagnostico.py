@@ -99,6 +99,17 @@ class DiagnosticoTest(TestCase):
         self.assertEqual(ayuda.detectar("No aguanto más así"), ["no aguanto mas"])
         self.assertEqual(ayuda.detectar("Tengo una reunión difícil"), [])
 
+    def test_pagina_de_ayuda_publica(self):
+        respuesta = self.client.get("/ayuda/")
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, "148")
+        self.assertContains(respuesta, "0800 345 1435")
+        self.assertContains(respuesta, "911")
+
+    def test_landing_enlaza_la_ayuda(self):
+        respuesta = self.client.get("/")
+        self.assertContains(respuesta, 'href="/ayuda/"')
+
     def test_ia_puede_derivar_aunque_no_haya_palabras_clave(self):
         datos = dict(RESPUESTAS)
         datos["situacion"] = "Ya no le encuentro sentido a nada de lo que hago."

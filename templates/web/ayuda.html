@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Necesito ayuda ahora · {{ SITE_NAME }}{% endblock %}
+{% block description %}Líneas gratuitas de ayuda en salud mental en Argentina y Mendoza, disponibles las 24 horas.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Ayuda</p>
+    <h1 class="h1-sm">Si necesita hablar<br>con alguien ahora</h1>
+
+    <p class="lead">{{ derivacion }}</p>
+
+    <div class="card" style="margin: 28px 0;">
+      {% for l in lineas %}
+        <p style="margin: 0 0 16px;"><strong>{{ l.numero }}</strong> · {{ l.nombre }}<br>
+          <span class="muted">{{ l.detalle }}</span></p>
+      {% endfor %}
+    </div>
+
+    <h2 class="h2-sm">Qué esperar de un llamado</h2>
+    <p>Lo atiende una persona formada para escuchar, sin juzgar y sin pedirle datos que no quiera
+      dar. La mayoría de estas líneas son gratuitas, confidenciales y no requieren obra social.
+      Si la línea está ocupada, vuelva a llamar o marque otra: la espera no significa que no haya
+      lugar para usted.</p>
+
+    <h2 class="h2-sm">Si es otra persona la que está en riesgo</h2>
+    <p>No la deje sola y no prometa secreto. Pregúntele directamente si está pensando en lastimarse:
+      hablar del tema no lo induce. Si hay un peligro inmediato, llame al 911 y quédese con ella
+      hasta que llegue la ayuda.</p>
+
+    <p class="muted">Onto escribe informes de coaching ontológico. No atiende crisis, no hace
+      diagnósticos clínicos y no reemplaza a un profesional de la salud mental.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'landing' %}">Volver al inicio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -23,7 +23,8 @@ def sitemap(request):
     base = f"https://{settings.SITE_DOMAIN}"
     hoy = timezone.localdate().isoformat()
     paginas = [("/", "1.0", "weekly"), ("/diagnostico/", "0.9", "monthly"),
-               ("/precios/", "0.8", "monthly"), ("/legal/", "0.3", "yearly")]
+               ("/precios/", "0.8", "monthly"), ("/ayuda/", "0.6", "yearly"),
+               ("/legal/", "0.3", "yearly")]
     partes = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
