@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Postulación recibida · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Paso 1 de 3</p>
+    <h1 class="h1-sm">Recibimos su postulación</h1>
+    <p class="lead">Le enviamos un correo para confirmar la dirección. Sin esa confirmación no
+      podemos seguir: es la primera verificación.</p>
+    <p>Después revisamos la constancia de matrícula contra el registro provincial, la póliza de
+      seguro y su identidad. Solemos responder en menos de siete días. Si falta algo, le
+      escribimos para pedirlo.</p>
+    <div class="cta-row">
+      <a class="btn" href="{% url 'red:directorio' %}">Ver el directorio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

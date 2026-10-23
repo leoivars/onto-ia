@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Correo confirmado · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Paso 2 de 3</p>
+    <h1 class="h1-sm">Correo confirmado</h1>
+    <p class="lead">Gracias, {{ profesional.nombre }}. Su correo quedó verificado.</p>
+    <p>Ahora revisamos el legajo: matrícula contra el registro provincial, seguro vigente e
+      identidad. Le escribimos con la decisión y, si aprueba, su ficha aparece en el directorio
+      con la fecha de verificación.</p>
+    <p class="muted">La verificación certifica identidad y habilitación legal. No es una
+      recomendación clínica ni un aval de resultados.</p>
+  </div>
+</section>
+{% endblock %}

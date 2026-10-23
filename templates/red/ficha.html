@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ p.nombre_completo }} · {{ SITE_NAME }}{% endblock %}
+{% block description %}{{ p.nombre_completo }}, {{ p.titulo }}. Matrícula verificada en {{ p.get_provincia_display }}.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Profesional verificado</p>
+    <h1 class="h1-sm">{{ p.nombre_completo }}</h1>
+    <p class="lead">{{ p.titulo }}{% if p.universidad %} · {{ p.universidad }}{% endif %}</p>
+
+    <div class="card">
+      <p><strong>Matrícula</strong> {{ p.matricula }} · {{ p.registro }} ({{ p.get_provincia_display }})</p>
+      <p><strong>Modalidad</strong> {{ p.get_modalidad_display }}{% if p.ciudad %} · {{ p.ciudad }}{% endif %}</p>
+      <p><strong>Especialidades</strong> {{ p.especialidades }}</p>
+      <p><strong>Verificado</strong> {{ p.verificado_en|date:"d/m/Y" }} · renueva
+        {{ p.vence_en|date:"d/m/Y" }}</p>
+    </div>
+
+    {% if p.enfoque %}<h2 class="h2-sm">Cómo trabaja</h2><p>{{ p.enfoque|linebreaks }}</p>{% endif %}
+    {% if p.bio %}<h2 class="h2-sm">Trayectoria</h2><p>{{ p.bio|linebreaks }}</p>{% endif %}
+
+    <p class="tiny muted">La verificación certifica identidad y habilitación legal; no es una
+      recomendación clínica ni un aval de resultados. Onto no recibe comisiones por esta
+      derivación.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'red:directorio' %}">Volver al directorio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

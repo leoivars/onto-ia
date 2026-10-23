@@ -31,6 +31,8 @@ services:
       DB_PORT: "5432"
     ports:
       - "8020:8000"
+    volumes:
+      - onto_media:/app/media
     security_opt:
       - no-new-privileges:true
     networks:
@@ -61,6 +63,7 @@ services:
 volumes:
   onto_db:
   onto_backups:
+  onto_media:
 
 networks:
   onto_net:

@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "reports",
     "pagos",
     "diagnostico",
+    "red",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +90,11 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Documentos de la red: se guardan fuera del alcance público y se descargan solo desde el admin.
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", str(BASE_DIR / "media"))
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

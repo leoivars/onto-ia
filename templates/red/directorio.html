@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Red de profesionales · {{ SITE_NAME }}{% endblock %}
+{% block description %}Psicólogos y profesionales de la salud mental con matrícula verificada, para cuando el coaching no alcanza.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Red de profesionales</p>
+    <h1 class="h1-sm">Cuando el coaching no alcanza</h1>
+    <p class="lead">Profesionales con matrícula verificada contra el registro provincial, identidad
+      comprobada y seguro vigente. Onto no cobra por derivar y ellos no pagan por recibir
+      consultas.</p>
+
+    {% if total %}
+      {% for provincia, gente in provincias.items %}
+        <h2 class="h2-sm">{{ provincia }}</h2>
+        <ul class="plain-list">
+          {% for p in gente %}
+            <li>
+              <a href="{% url 'red:ficha' p.slug %}">{{ p.nombre_completo }}</a> ·
+              {{ p.titulo }} · Mat. {{ p.matricula }}<br>
+              <span class="muted">{{ p.especialidades }} · {{ p.get_modalidad_display }}
+                {% if p.ciudad %} · {{ p.ciudad }}{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endfor %}
+      <p class="tiny muted">Verificado significa identidad y habilitación legal comprobadas. No es
+        una recomendación clínica ni un aval de resultados.</p>
+    {% else %}
+      <p>Todavía no hay profesionales publicados. La red está en verificación.</p>
+    {% endif %}
+
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'red:postular' %}">Soy profesional y quiero sumarme</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

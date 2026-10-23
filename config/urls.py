@@ -16,6 +16,7 @@ urlpatterns = [
     path("precios/", wv.pricing, name="pricing"),
     path("legal/", wv.legal, name="legal"),
     path("ayuda/", wv.ayuda_view, name="ayuda"),
+    path("red/", include("red.urls")),
     path("registro/", wv.signup, name="signup"),
     path("panel/", wv.dashboard, name="panel"),
     path("metricas/", wv.metricas, name="metricas"),
