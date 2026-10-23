@@ -415,3 +415,68 @@ def gestion_publicaciones(request):
         "tarjetas": tarjetas, "estado": estado, "conteos": conteos,
         "total": sum(conteos.values()),
     })
+
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def gestion(request):
+    """Panel único de administración: Instagram, cola de informes y estado del sistema."""
+    import re
+    from pathlib import Path
+
+    from django.conf import settings as cfg
+
+    from diagnostico.models import Diagnostico
+    from red.models import Profesional
+    from reports.models import InformeEnCola
+
+    from . import analitica_ig, instagram
+    from .metricas import resumen as resumen_metricas
+    from .models import EmailSecuencia, Lead, Publicacion
+
+    if request.method == "POST":
+        accion = request.POST.get("accion")
+        if accion == "historia":
+            archivo = request.POST.get("archivo", "")
+            if not re.match(r"^historia-[a-z0-9-]{2,40}$", archivo):
+                messages.error(request, "Nombre de historia inválido.")
+            else:
+                url = f"https://{cfg.SITE_DOMAIN}/ig/{archivo}.jpg"
+                try:
+                    contenedor = instagram.crear_contenedor(url, "", tipo="STORIES")
+                    instagram.esperar_listo(contenedor)
+                    instagram.publicar(contenedor)
+                    messages.success(request, f"Historia publicada: {archivo}.")
+                except instagram.InstagramError as exc:
+                    messages.error(request, f"No se pudo publicar: {exc}")
+            return redirect("gestion")
+
+    carpeta = Path(cfg.MEDIA_ROOT) / "publicaciones"
+    historias = sorted(p.stem for p in carpeta.glob("historia-*.jpg"))
+    portadas = sorted(p.stem for p in carpeta.glob("portada-*.jpg"))
+
+    publicadas = Publicacion.objects.filter(estado="publicada").order_by("-publicada_en")[:8]
+    cola = Publicacion.objects.filter(estado="aprobada").order_by("programada")[:5]
+
+    return render(request, "web/gestion.html", {
+        "conteos": {
+            "borrador": Publicacion.objects.filter(estado="borrador").count(),
+            "aprobada": Publicacion.objects.filter(estado="aprobada").count(),
+            "publicada": Publicacion.objects.filter(estado="publicada").count(),
+            "descartada": Publicacion.objects.filter(estado="descartada").count(),
+        },
+        "publicadas": publicadas,
+        "cola": cola,
+        "historias": historias,
+        "portadas": portadas,
+        "ig": analitica_ig.resumen(),
+        "m": resumen_metricas(),
+        "informes_cola": InformeEnCola.objects.filter(estado="pendiente").count(),
+        "profesionales_pendientes": Profesional.objects.filter(estado="pendiente").count(),
+        "diagnosticos_7d": Diagnostico.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)).count(),
+        "leads": Lead.objects.count(),
+        "secuencia_pendiente": EmailSecuencia.objects.filter(enviado=False).count(),
+        "ip": request.META.get("HTTP_CF_CONNECTING_IP") or request.META.get("REMOTE_ADDR", ""),
+        "token_ig": bool(getattr(cfg, "IG_TOKEN", "") or __import__("os").environ.get("IG_TOKEN")),
+    })

@@ -1,7 +1,8 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
-from .models import DispositivoTOTP, InviteCode, Lead, Profile, Publicacion
+from .models import (DispositivoTOTP, EmailSecuencia, InviteCode, Lead, OptOut,
+                     Profile, Publicacion)
 
 
 @admin.register(Profile)
@@ -117,3 +118,17 @@ class DispositivoTOTPAdmin(admin.ModelAdmin):
             DispositivoTOTP.objects.filter(pk=dispositivo.pk).delete()
         self.message_user(request, "Reseteado: esos usuarios deberán configurarlo al entrar.",
                           messages.WARNING)
+
+
+@admin.register(EmailSecuencia)
+class EmailSecuenciaAdmin(admin.ModelAdmin):
+    list_display = ("email", "paso", "programado", "enviado", "enviado_en", "error")
+    list_filter = ("enviado", "paso")
+    search_fields = ("email", "asunto")
+    ordering = ("programado",)
+
+
+@admin.register(OptOut)
+class OptOutAdmin(admin.ModelAdmin):
+    list_display = ("email", "creado")
+    search_fields = ("email",)

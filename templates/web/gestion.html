@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Panel · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <p class="kicker">Administración</p>
+    <h1 class="h1-sm">Panel</h1>
+    <p class="tiny muted">Sesión desde {{ ip }} · segundo factor activo ·
+      <a href="{% url 'admin:index' %}">admin avanzado</a> ·
+      <a href="{% url 'metricas' %}">métricas completas</a></p>
+
+    <div class="grid-4" style="margin-top:24px;">
+      <div class="card">
+        <p class="kicker">Publicaciones</p>
+        <p class="big">{{ conteos.borrador }}</p>
+        <p class="tiny muted">borradores · {{ conteos.aprobada }} aprobadas ·
+          {{ conteos.publicada }} publicadas</p>
+        <a class="btn btn-sm full" href="{% url 'gestion_publicaciones' %}">Revisar cola</a>
+      </div>
+      <div class="card">
+        <p class="kicker">Informes en cola</p>
+        <p class="big">{{ informes_cola }}</p>
+        <p class="tiny muted">esperando créditos de IA</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Profesionales</p>
+        <p class="big">{{ profesionales_pendientes }}</p>
+        <p class="tiny muted">legajos sin verificar</p>
+        <a class="btn btn-sm btn-ghost full" href="{% url 'admin:red_profesional_changelist' %}">Ver legajos</a>
+      </div>
+      <div class="card">
+        <p class="kicker">Últimos 7 días</p>
+        <p class="big">{{ diagnosticos_7d }}</p>
+        <p class="tiny muted">diagnósticos · {{ leads }} correos en lista</p>
+      </div>
+    </div>
+
+    <h2 class="h2-sm">Instagram</h2>
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Próximas a publicar</p>
+        {% if cola %}
+          <ul class="plain-list">
+            {% for p in cola %}
+              <li>{{ p.texto|truncatechars:60 }}<br>
+                <span class="tiny muted">{{ p.programada|date:"d/m/Y H:i" }}</span></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Nada aprobado esperando fecha.</p>
+        {% endif %}
+      </div>
+      <div class="card">
+        <p class="kicker">Últimas publicadas</p>
+        {% if publicadas %}
+          <ul class="plain-list">
+            {% for p in publicadas %}
+              <li>{{ p.texto|truncatechars:52 }}<br>
+                <span class="tiny muted">{{ p.publicada_en|date:"d/m/Y" }}{% if p.permalink %} ·
+                  <a href="{{ p.permalink }}" target="_blank">ver</a>{% endif %}</span></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Todavía no hay publicaciones.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="kicker">Rendimiento</p>
+      <p class="small">{{ ig.lectura }}</p>
+      {% if ig.filas %}
+        <table class="tabla">
+          <thead><tr><th>Pieza</th><th>Alcance</th><th>Guardados</th><th>Por mil</th></tr></thead>
+          <tbody>
+            {% for f in ig.filas %}
+              <tr><td>{{ f.publicacion.texto|truncatechars:44 }}</td><td>{{ f.metrica.alcance }}</td>
+                <td>{{ f.metrica.guardados }}</td><td>{{ f.metrica.guardados_por_mil }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+      <p class="tiny muted">Token de Instagram: {% if token_ig %}configurado{% else %}falta{% endif %} ·
+        costo de IA del mes: US$ {{ m.costo_total }} de {{ m.presupuesto }}</p>
+    </div>
+
+    <h2 class="h2-sm">Historias</h2>
+    <div class="grid-2">
+      {% for h in historias %}
+        <div class="card">
+          <img src="https://{{ SITE_DOMAIN }}/ig/{{ h }}.jpg" alt="{{ h }}"
+               style="width:100%; max-width:220px; display:block; margin-bottom:12px; border:1px solid #e3ddd1;">
+          <p class="small" style="margin:0 0 10px;">{{ h }}</p>
+          <form method="post">{% csrf_token %}
+            <input type="hidden" name="accion" value="historia">
+            <input type="hidden" name="archivo" value="{{ h }}">
+            <button class="btn btn-sm" type="submit">Publicar historia</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if portadas %}
+      <h2 class="h2-sm">Portadas de destacadas</h2>
+      <p class="tiny muted">Se suben a mano desde el teléfono al crear cada destacada.</p>
+      <ul class="plain-list">
+        {% for p in portadas %}
+          <li><a href="/ig/{{ p }}.jpg" target="_blank">{{ p }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <h2 class="h2-sm">Sistema</h2>
+    <div class="grid-2">
+      <div class="card">
+        <p class="kicker">Correos</p>
+        <p class="small">{{ secuencia_pendiente }} correos de seguimiento programados sin enviar.</p>
+        <a class="btn btn-sm btn-ghost" href="{% url 'admin:web_emailsecuencia_changelist' %}">Ver secuencia</a>
+      </div>
+      <div class="card">
+        <p class="kicker">Accesos</p>
+        <p class="small">El panel solo responde a las IP habilitadas y exige segundo factor. Su IP
+          ahora es <code>{{ ip }}</code>.</p>
+        <a class="btn btn-sm btn-ghost" href="{% url 'account' %}">Mi cuenta</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
