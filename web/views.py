@@ -251,6 +251,7 @@ def baja_correos(request, token):
 def publicacion_imagen(request, nombre):
     """Expone las imágenes que se publican en redes: solo nombres válidos de esa carpeta."""
     import re
+    from email.utils import formatdate
     from pathlib import Path
 
     from django.http import FileResponse, Http404
@@ -263,9 +264,7 @@ def publicacion_imagen(request, nombre):
     respuesta = FileResponse(open(ruta, "rb"), content_type="image/jpeg")
     # Cinco minutos, no un año: estas piezas se regeneran y la caché del borde las retenía.
     respuesta["Cache-Control"] = "public, max-age=300"
-    respuesta["Last-Modified"] = timezone.localtime(
-        timezone.datetime.fromtimestamp(ruta.stat().st_mtime, tz=timezone.utc)
-    ).strftime("%a, %d %b %Y %H:%M:%S GMT")
+    respuesta["Last-Modified"] = formatdate(ruta.stat().st_mtime, usegmt=True)
     return respuesta
 
 
