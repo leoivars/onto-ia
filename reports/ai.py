@@ -75,6 +75,10 @@ use «observador», explíquelo en una frase con palabras comunes; no acumule je
 - Cite entre comillas frases textuales del consultante. No invente episodios, nombres ni datos.
 - Si falta información, señale el hueco en lugar de rellenarlo.
 - No repita los títulos de las secciones dentro del texto.
+- Si en la entrevista aparecen señales de riesgo (ideación suicida, autolesión, violencia o \
+abuso), agregue antes de la primera sección un bloque con el encabezado exacto «## Antes de \
+empezar», de dos o tres frases y sin alarmismo, que diga que eso excede el coaching y mencione \
+el 911 y el 148 opción 0 (Mendoza). No interprete la crisis en el resto del informe.
 
 Extensión total: entre 1200 y 1800 palabras.
 
@@ -133,9 +137,9 @@ def generar_informe(ctx, modelo=None):
 
     if ctx.get("alertas"):
         partes.append(
-            "\n### Atención\nAparecen señales de riesgo en las respuestas. Incluya una sección breve "
-            "al inicio, dentro de «Lectura del observador», recomendando consultar a un profesional "
-            "de salud mental y a una línea de ayuda local. No intente intervenir en crisis.")
+            "\n### Atención\nAparecen señales de riesgo en las respuestas. Comience con el bloque "
+            "«## Antes de empezar» descrito en las reglas: dos o tres frases, sin alarmismo, con "
+            "el 911 y el 148 opción 0 (Mendoza). No intente intervenir en crisis ni interpretarla.")
 
     payload = {
         "model": modelo or settings.AI_MODEL,

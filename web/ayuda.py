@@ -65,7 +65,11 @@ def detectar(*textos):
 
 def texto_derivacion():
     return (
-        "Este servicio no atiende crisis ni ofrece tratamiento. Si está atravesando un momento "
-        "de riesgo, hable ahora con alguien: llame al 911 si hay peligro inmediato, o al 148 "
-        "opción 0 (Mendoza, 24 horas), o al 0800 345 1435 (Centro de Asistencia al Suicida)."
+        "Antes de seguir, algo importante: en lo que contó hay un punto que no es materia de "
+        "coaching. Nada de esto es un diagnóstico clínico ni una evaluación de su salud, y no "
+        "cambia el trabajo que veníamos haciendo. Si en algún momento aparece la idea de "
+        "lastimarse, de desaparecer o de que no vale la pena seguir, hay personas preparadas para "
+        "escuchar en el acto: 911 si el peligro es inmediato; 148 opción 0 en Mendoza, gratuita y "
+        "las 24 horas; 0800 345 1435 en todo el país, de 8 a 24. Pedir esa ayuda no interrumpe su "
+        "proceso: lo cuida."
     )

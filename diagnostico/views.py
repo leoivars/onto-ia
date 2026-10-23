@@ -91,6 +91,9 @@ def resultado(request):
 
         if not error:
             texto, motor = engine.generar(datos, nombre)
+            if texto == "RIESGO":
+                request.session.pop("diagnostico", None)
+                return render(request, "diagnostico/riesgo.html", {"lineas": ayuda.LINEAS})
             diagnostico = Diagnostico.objects.create(
                 email=email, nombre=nombre, respuestas=datos, teaser=_teaser(datos),
                 informe=texto, motor=motor, ip=ip)

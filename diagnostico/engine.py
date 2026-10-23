@@ -18,6 +18,9 @@ Reglas:
 - Distinga lo que pasó (hecho) de lo que la persona concluyó que pasó (interpretación).
 - Cite entre comillas frases textuales de la persona. No invente datos.
 - Extensión: 350 a 450 palabras.
+- Antes de escribir, evalúe si en las respuestas aparecen señales de riesgo: ideación suicida, \
+autolesión, violencia o abuso. Si aparecen, no escriba el informe y responda únicamente la \
+palabra RIESGO, sin ninguna otra palabra.
 
 Devuelva Markdown con exactamente estos tres encabezados de nivel 2:
 ## Qué está sosteniendo
@@ -64,6 +67,8 @@ def generar(datos, nombre=""):
                 prompt = f"Nombre de la persona: {nombre}\n{prompt}"
             texto, usage = ai.completar(
                 SISTEMA, prompt, modelo=settings.AI_MODEL, max_tokens=1200)
+            if texto.strip().upper().startswith("RIESGO") and len(texto) < 80:
+                return "RIESGO", "ia"
             if len(texto) > 400:
                 return texto, "ia"
         except ai.AIUnavailable as exc:

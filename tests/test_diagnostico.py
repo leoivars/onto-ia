@@ -5,6 +5,7 @@ from django.core import mail
 from django.test import Client, TestCase, override_settings
 
 from diagnostico.models import Diagnostico
+from web import ayuda
 
 RESPUESTAS = {
     "situacion": "En la reunión de socios mi padre presentó mi trabajo sin nombrarme.",
@@ -93,8 +94,20 @@ class DiagnosticoTest(TestCase):
         self.assertNotIn("diagnostico", self.client.session)
 
     def test_riesgo_detecta_aunque_falten_acentos(self):
-        from web import ayuda
 
         self.assertEqual(ayuda.detectar("Quiero hacerme una autolesión"), ["autolesion"])
         self.assertEqual(ayuda.detectar("No aguanto más así"), ["no aguanto mas"])
         self.assertEqual(ayuda.detectar("Tengo una reunión difícil"), [])
+
+    def test_ia_puede_derivar_aunque_no_haya_palabras_clave(self):
+        datos = dict(RESPUESTAS)
+        datos["situacion"] = "Ya no le encuentro sentido a nada de lo que hago."
+        self.client.post("/diagnostico/", datos)
+        with patch("diagnostico.engine.ai.disponible", return_value=True), \
+             patch("diagnostico.engine.ai.completar", return_value=("RIESGO", {})):
+            respuesta = self.client.post(
+                "/diagnostico/resultado/", {"email": "leo@ejemplo.test", "nombre": "Leo"})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, "148")
+        self.assertEqual(Diagnostico.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
