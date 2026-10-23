@@ -56,15 +56,29 @@ docker compose exec onto_web python manage.py check --deploy
 
 ## Backup y restauración
 
-```bash
-# backup
-docker compose exec -T onto_db pg_dump -U onto onto | gzip > ~/onto/backup-$(date +%F).sql.gz
+Corre en el contenedor `onto_backup`: dump de Postgres, cifrado AES-256, retención local de 14
+días y subida opcional a Google Drive con retención de 30.
 
-# restaurar
-gunzip -c backup-2026-10-22.sql.gz | docker compose exec -T onto_db psql -U onto onto
+La contraseña de cifrado va en `.env` como `BACKUP_PASSPHRASE`. **Sin ella no se generan
+backups**; y si se pierde, los archivos viejos no se pueden abrir. Guarde una copia en un lugar
+fuera del servidor (gestor de contraseñas, papel).
+
+Restaurar:
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in onto-XXXX.dump.gz.enc \
+  -pass env:BACKUP_PASSPHRASE | gunzip \
+  | docker compose exec -T onto_db pg_restore -U onto -d onto --clean
 ```
 
-Guardar los backups fuera del servidor: son datos personales sensibles (Ley 25.326).
+Backup manual, sin esperar al ciclo diario:
+
+```bash
+docker compose run --rm onto_backup /usr/local/bin/backup.sh
+```
+
+Para Drive: crear `rclone.conf` en la raíz del proyecto (permiso 600, fuera de git) con la
+configuración del remoto y definir `RCLONE_REMOTE=gdrive:Onto/backups` en `.env`.
 
 ## Correo
 
