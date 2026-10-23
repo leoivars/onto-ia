@@ -26,17 +26,33 @@ class LeadAdmin(admin.ModelAdmin):
 
 @admin.register(Publicacion)
 class PublicacionAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "estado", "programada", "vista_previa", "publicada_en", "permalink")
+    list_display = ("nombre", "estado", "programada", "repite", "vista_previa", "publicada_en",
+                    "permalink")
     list_filter = ("estado",)
     search_fields = ("nombre", "texto", "caption")
     readonly_fields = ("ig_id", "permalink", "error", "publicada_en", "creado", "actualizado",
-                       "vista_previa")
+                       "vista_previa", "repite")
     actions = ("aprobar_manana", "aprobar_manana_tarde", "publicar_ahora", "descartar")
     fieldsets = (
-        ("Contenido", {"fields": ("nombre", "texto", "caption", "pie", "vista_previa")}),
+        ("Contenido", {"fields": ("nombre", "texto", "caption", "pie", "vista_previa", "repite")}),
         ("Estado", {"fields": ("estado", "programada", "publicada_en", "permalink", "ig_id",
                                "error", "creado", "actualizado")}),
     )
+
+    @admin.display(description="parecido con lo ya publicado")
+    def repite(self, obj):
+        if not obj.pk:
+            return "—"
+        from .analitica_ig import parecido
+
+        otra, valor = parecido(obj)
+        if valor >= 0.6:
+            return format_html('<span style="color:#a33">se repite {:.0%} con «{}»</span>',
+                               valor, otra.nombre)
+        if valor >= 0.35:
+            return format_html('<span style="color:#a70">se parece {:.0%} a «{}»</span>',
+                               valor, otra.nombre)
+        return "distinto"
 
     @admin.display(description="tarjeta")
     def vista_previa(self, obj):

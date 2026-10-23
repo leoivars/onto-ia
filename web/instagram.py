@@ -80,3 +80,21 @@ def limite():
     cuenta = id_cuenta()
     datos = _llamar("GET", f"{cuenta}/content_publishing_limit", fields="quota_usage,config")
     return datos.get("data", [{}])[0]
+
+
+def insights(media_id):
+    """Métricas de una publicación. Devuelve un dict con lo que Meta permita leer."""
+    completo = "reach,likes,comments,shares,saved,impressions"
+    for metrica in (completo, "reach,likes,comments,shares,saved", "reach,likes"):
+        try:
+            datos = _llamar("GET", f"{media_id}/insights", metric=metrica)
+        except InstagramError:
+            continue
+        salida = {}
+        for fila in datos.get("data", []):
+            valores = fila.get("values") or [{}]
+            salida[fila.get("name")] = valores[0].get("value", 0)
+        if salida:
+            return salida
+    raise InstagramError("No se pudieron leer las métricas (falta el permiso de insights)")
+

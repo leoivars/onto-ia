@@ -54,6 +54,26 @@
       <p class="muted">Todavía no hay visitas registradas. A partir de ahora se cuentan solas.</p>
     {% endif %}
 
+    <h3 class="h2-sm">Instagram</h3>
+    <p class="tiny muted">{{ m.ig.lectura }}</p>
+    {% if m.ig.filas %}
+      <table class="tabla">
+        <thead><tr><th>Pieza</th><th>Alcance</th><th>Guardados</th><th>Por mil</th><th>Likes</th><th>Comentarios</th></tr></thead>
+        <tbody>
+          {% for f in m.ig.filas %}
+            <tr>
+              <td>{{ f.publicacion.texto|truncatechars:48 }}</td>
+              <td>{{ f.metrica.alcance }}</td>
+              <td>{{ f.metrica.guardados }}</td>
+              <td>{{ f.metrica.guardados_por_mil }}</td>
+              <td>{{ f.metrica.likes }}</td>
+              <td>{{ f.metrica.comentarios }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
     <h3 class="h2-sm">Serie mensual</h3>
     <p class="tiny muted">Los totales diarios se guardan sin identificadores, así que la serie
       sigue disponible aunque el detalle de cada visita se borre a los 90 días.</p>

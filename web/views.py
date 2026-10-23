@@ -99,6 +99,9 @@ def metricas(request):
     datos = resumen_metricas()
     datos["trafico"] = trafico()
     datos["historico"] = historico()
+    from . import analitica_ig
+
+    datos["ig"] = analitica_ig.resumen()
     return render(request, "web/metricas.html", {"m": datos})
 
 

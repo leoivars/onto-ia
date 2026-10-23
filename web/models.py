@@ -217,3 +217,28 @@ class Publicacion(models.Model):
         from django.conf import settings
 
         return f"https://{settings.SITE_DOMAIN}/ig/{self.nombre}.jpg"
+
+
+class MetricaPublicacion(models.Model):
+    """Foto del rendimiento de una publicación en un momento dado."""
+
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE, related_name="metricas")
+    medido = models.DateTimeField(auto_now_add=True, db_index=True)
+    alcance = models.PositiveIntegerField(default=0)
+    impresiones = models.PositiveIntegerField(default=0)
+    likes = models.PositiveIntegerField(default=0)
+    comentarios = models.PositiveIntegerField(default=0)
+    compartidos = models.PositiveIntegerField(default=0)
+    guardados = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ("-medido",)
+        verbose_name = "métrica de publicación"
+        verbose_name_plural = "métricas de publicaciones"
+
+    def __str__(self):
+        return f"{self.publicacion.nombre} · {self.medido:%d/%m} · alcance {self.alcance}"
+
+    @property
+    def guardados_por_mil(self):
+        return round(1000 * self.guardados / self.alcance) if self.alcance else 0
