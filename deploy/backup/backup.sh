@@ -16,6 +16,9 @@ SELLO=$(date +%Y%m%d-%H%M)
 PLANO="$DESTINO/onto-$SELLO.dump.gz"
 CIFRADO="$PLANO.enc"
 
+# Si algo falla, el dump en claro no queda en disco.
+trap 'rm -f "$PLANO"' EXIT
+
 mkdir -p "$DESTINO"
 export PGPASSWORD="$DB_PASSWORD"
 
