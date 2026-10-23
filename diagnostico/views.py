@@ -105,7 +105,8 @@ def resultado(request):
                 f"—\nOnto · Coaching ontológico asistido por IA\n"
                 f"Este diagnóstico es una herramienta de reflexión, no un tratamiento ni un "
                 f"diagnóstico clínico. No reemplaza la atención de un profesional de la salud "
-                f"mental. Para darse de baja de estos correos, responda «baja»."
+                f"mental. Para darse de baja de estos correos, responda «baja».\n"
+                f"Para eliminar todos sus datos: https://{settings.SITE_DOMAIN}/baja/\n"
             )
             try:
                 send_mail(asunto, cuerpo, None, [email], fail_silently=False)

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Enlace no válido · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Privacidad</p>
+    <h1 class="h1-sm">No pudimos usar ese enlace</h1>
+    <p class="lead">{{ motivo }}</p>
+    <div class="cta-row">
+      <a class="btn" href="{% url 'baja' %}">Pedir uno nuevo</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

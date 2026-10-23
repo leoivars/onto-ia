@@ -6,10 +6,14 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.core import signing
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 
 from intake import questions as Q
 from reports.models import Report
@@ -126,9 +130,13 @@ def export_data(request):
 @login_required
 @require_POST
 def delete_account(request):
-    user = request.user
-    user.delete()
-    messages.success(request, "Su cuenta y todos sus datos fueron eliminados.")
+    from .olvido import borrar_por_email
+
+    detalle = borrar_por_email(request.user.email)
+    messages.success(
+        request,
+        f"Su cuenta y sus datos fueron eliminados ({detalle['cuenta']} cuenta, "
+        f"{detalle['diagnosticos']} diagnósticos).")
     return redirect("landing")
 
 
@@ -158,3 +166,49 @@ def redeem_code(request):
     inv.save(update_fields=["used_by", "used_at"])
     messages.success(request, f"Acceso {inv.get_plan_display()} activo por {inv.dias} días.")
     return redirect("panel")
+
+
+# --------------------------------------------------------------- derecho de supresión
+
+@require_http_methods(["GET", "POST"])
+def baja(request):
+    """Pedido de supresión: se confirma por correo para que nadie borre datos ajenos."""
+    error = ""
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip().lower()
+        try:
+            validate_email(email)
+        except ValidationError:
+            error = "Revise el correo."
+        if not error:
+            token = signing.dumps({"email": email}, salt="baja")
+            enlace = f"https://{settings.SITE_DOMAIN}/baja/{token}/"
+            send_mail(
+                "Confirmar borrado de datos · Onto",
+                (
+                    "Recibimos un pedido para eliminar los datos asociados a este correo.\n\n"
+                    f"Para confirmarlo, abra este enlace (vale 48 horas):\n{enlace}\n\n"
+                    "Si usted no lo pidió, ignore este mensaje: no se borra nada.\n\n"
+                    "—\nOnto · Privacidad"
+                ),
+                None, [email], fail_silently=True)
+            return render(request, "web/baja_enviada.html", {"email": email})
+    return render(request, "web/baja.html", {"error": error})
+
+
+@require_http_methods(["GET"])
+def baja_confirmar(request, token):
+    from .olvido import borrar_por_email
+
+    try:
+        datos = signing.loads(token, salt="baja", max_age=48 * 3600)
+    except signing.SignatureExpired:
+        return render(request, "web/baja_error.html",
+                      {"motivo": "El enlace venció. Pida uno nuevo."}, status=410)
+    except signing.BadSignature:
+        return render(request, "web/baja_error.html",
+                      {"motivo": "El enlace no es válido."}, status=410)
+
+    detalle = borrar_por_email(datos.get("email"))
+    return render(request, "web/baja_confirmada.html",
+                  {"email": datos.get("email"), "detalle": detalle})

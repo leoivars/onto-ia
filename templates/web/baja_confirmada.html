@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Datos eliminados · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Privacidad</p>
+    <h1 class="h1-sm">Datos eliminados</h1>
+    <p class="lead">Eliminamos los registros asociados a {{ email }}.</p>
+    <ul class="plain-list">
+      <li>Cuentas: {{ detalle.cuenta }}</li>
+      <li>Diagnósticos: {{ detalle.diagnosticos }}</li>
+      <li>Correos en la lista: {{ detalle.leads }}</li>
+      <li>Legajos de la red: {{ detalle.profesionales }}</li>
+      <li>Documentos: {{ detalle.documentos }}</li>
+    </ul>
+    <p class="muted">Las copias de seguridad cifradas anteriores a este pedido se destruyen solas
+      en un plazo máximo de 30 días.</p>
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'landing' %}">Volver al inicio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Borrar mis datos · {{ SITE_NAME }}{% endblock %}
+{% block description %}Pedido de supresión de datos personales.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Privacidad</p>
+    <h1 class="h1-sm">Borrar mis datos</h1>
+    <p class="lead">Eliminamos su cuenta, sus respuestas, sus informes, los diagnósticos que haya
+      pedido y su correo de la lista. Si es profesional de la red, también se borra el legajo y
+      los documentos.</p>
+
+    <p>Por seguridad, le mandamos un enlace al correo para confirmar que el pedido es suyo. El
+      enlace vale 48 horas.</p>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      <div class="field">
+        <label for="email">Correo con el que usó Onto</label>
+        <input type="email" name="email" id="email" required>
+        {% if error %}<p class="err">{{ error }}</p>{% endif %}
+      </div>
+      <div class="cta-row">
+        <button class="btn" type="submit">Pedir el borrado</button>
+      </div>
+    </form>
+
+    <p class="tiny muted">Hay una excepción que la ley admite: las copias de seguridad cifradas
+      anteriores al pedido se conservan hasta 30 días y después se destruyen solas. No se usan
+      para nada más. <a href="{% url 'legal' %}">Ver la política completa</a>.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Revise su correo · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Privacidad</p>
+    <h1 class="h1-sm">Le enviamos el enlace</h1>
+    <p class="lead">Si existe una cuenta o un registro con {{ email }}, va a recibir un correo con
+      el enlace de confirmación.</p>
+    <p>Si en diez minutos no llega, revise la carpeta de spam. No borramos nada hasta que abra
+      ese enlace.</p>
+  </div>
+</section>
+{% endblock %}
