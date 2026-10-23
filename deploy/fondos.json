@@ -1,0 +1,26 @@
+[
+  {
+    "archivo": "fondos/luz.jpg",
+    "titulo": "Furnitures in the sunlight (Unsplash)",
+    "origen": "Wikimedia Commons",
+    "url": "https://commons.wikimedia.org/wiki/File:Furnitures_in_the_sunlight_(Unsplash).jpg",
+    "licencia": "CC0 1.0 (dominio público)",
+    "uso": "Fondo de tarjetas, teñido al tono del sitio."
+  },
+  {
+    "archivo": "fondos/escribir.jpg",
+    "titulo": "Woman writing on a notebook with a pen",
+    "origen": "Wikimedia Commons",
+    "url": "https://commons.wikimedia.org/wiki/File:Woman_writing_on_a_notebook_with_a_pen.jpg",
+    "licencia": "CC0 1.0 (dominio público)",
+    "uso": "Fondo de tarjetas, teñido al tono del sitio."
+  },
+  {
+    "archivo": "fondos/blur.jpg",
+    "titulo": "Notebook-writing-man-book-person-blur",
+    "origen": "Wikimedia Commons",
+    "url": "https://commons.wikimedia.org/wiki/File:Notebook-writing-man-book-person-blur-1176206.jpg",
+    "licencia": "CC0 1.0 (dominio público)",
+    "uso": "Fondo de tarjetas, teñido al tono del sitio."
+  }
+]

@@ -24,7 +24,8 @@ class Command(BaseCommand):
                 nombre=entrada["nombre"],
                 texto=entrada["texto"],
                 caption=entrada.get("caption", ""),
-                pie=entrada.get("pie"))
+                pie=entrada.get("pie"),
+                fondo=entrada.get("fondo"))
             creadas += int(nueva)
             actualizadas += int(not nueva)
         self.stdout.write(self.style.SUCCESS(

@@ -13,7 +13,7 @@ from .tarjetas import tarjeta
 logger = logging.getLogger(__name__)
 
 
-def generar(nombre, texto, caption="", pie=None, programada=None):
+def generar(nombre, texto, caption="", pie=None, programada=None, fondo=None):
     """Crea el borrador y dibuja la imagen. No publica nada."""
     publicacion, creada = Publicacion.objects.get_or_create(
         nombre=nombre,
@@ -21,7 +21,12 @@ def generar(nombre, texto, caption="", pie=None, programada=None):
                   "pie": pie or "Coaching ontológico con IA · onto.xz.com.ar",
                   "programada": programada})
     salida = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{nombre}.jpg"
-    tarjeta(publicacion.texto, salida, pie=publicacion.pie)
+    if fondo and Path(fondo).exists():
+        from .tarjetas import tarjeta_foto
+
+        tarjeta_foto(publicacion.texto, salida, fondo, pie=publicacion.pie)
+    else:
+        tarjeta(publicacion.texto, salida, pie=publicacion.pie)
     return publicacion, creada
 
 
