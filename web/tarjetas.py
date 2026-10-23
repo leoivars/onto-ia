@@ -47,7 +47,7 @@ def _duotono(ruta_foto, tamano=(ANCHO, ALTO)):
     return ImageOps.colorize(foto, black=(26, 44, 35), white=CREMA).convert("RGB")
 
 
-def tarjeta_foto(texto, salida, fondo, pie="Coaching ontológico con IA · onto.xz.com.ar"):
+def tarjeta_foto(texto, salida, fondo, pie="Coaching ontológico · onto.xz.com.ar"):
     """Tarjeta con foto de fondo, teñida al tono del sitio y con el texto en crema."""
     from PIL import ImageFilter
 
@@ -101,7 +101,7 @@ def tarjeta_foto(texto, salida, fondo, pie="Coaching ontológico con IA · onto.
     return salida
 
 
-def tarjeta(texto, salida, pie="Coaching ontológico con IA · onto.xz.com.ar"):
+def tarjeta(texto, salida, pie="Coaching ontológico · onto.xz.com.ar"):
     """Dibuja una tarjeta 1080x1350 y la guarda como JPEG listo para publicar."""
     imagen = Image.new("RGB", (ANCHO, ALTO), CREMA)
     dibujo = ImageDraw.Draw(imagen)

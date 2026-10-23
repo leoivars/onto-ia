@@ -18,7 +18,7 @@ class Command(BaseCommand):
         parser.add_argument("--texto", required=True, help="Titular de la tarjeta.")
         parser.add_argument("--caption", default="", help="Texto de la publicación.")
         parser.add_argument("--nombre", required=True, help="Nombre del archivo, sin extensión.")
-        parser.add_argument("--pie", default="Coaching ontológico con IA · onto.xz.com.ar")
+        parser.add_argument("--pie", default="Coaching ontológico · onto.xz.com.ar")
         parser.add_argument("--solo-imagen", action="store_true",
                             help="Genera la imagen y no publica.")
         parser.add_argument("--dry-run", action="store_true", help="Muestra qué haría.")

@@ -18,7 +18,7 @@ def generar(nombre, texto, caption="", pie=None, programada=None, fondo=None):
     publicacion, creada = Publicacion.objects.get_or_create(
         nombre=nombre,
         defaults={"texto": texto, "caption": caption,
-                  "pie": pie or "Coaching ontológico con IA · onto.xz.com.ar",
+                  "pie": pie or "Coaching ontológico · onto.xz.com.ar",
                   "programada": programada})
     salida = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{nombre}.jpg"
     if fondo and Path(fondo).exists():

@@ -194,7 +194,7 @@ class Publicacion(models.Model):
     nombre = models.SlugField(max_length=60, unique=True)
     texto = models.TextField(help_text="Titular que va en la tarjeta.")
     caption = models.TextField(blank=True, help_text="Texto de la publicación.")
-    pie = models.CharField(max_length=120, default="Coaching ontológico con IA · onto.xz.com.ar")
+    pie = models.CharField(max_length=120, default="Coaching ontológico · onto.xz.com.ar")
     estado = models.CharField(max_length=12, choices=ESTADOS, default="borrador")
     programada = models.DateTimeField(null=True, blank=True, db_index=True)
     ig_id = models.CharField(max_length=64, blank=True)
