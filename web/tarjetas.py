@@ -16,8 +16,10 @@ def _fuente(nombre, tamano):
     ruta = FUENTES / nombre
     try:
         return ImageFont.truetype(str(ruta), tamano)
-    except OSError:
-        return ImageFont.load_default()
+    except OSError as exc:
+        raise RuntimeError(
+            f"Falta la tipografía {ruta}. Instalá fonts-dejavu-core en la imagen: "
+            f"sin eso la tarjeta sale con una fuente de reemplazo ilegible.") from exc
 
 
 def _envolver(dibujo, texto, fuente, ancho_max):

@@ -10,6 +10,9 @@ WORKDIR /app
 RUN addgroup --system --gid 10001 onto \
     && adduser --system --uid 10001 --ingroup onto --home /app onto
 
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
