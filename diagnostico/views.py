@@ -71,6 +71,7 @@ def resultado(request):
     error = ""
     if request.method == "POST":
         email = (request.POST.get("email") or "").strip().lower()
+        nombre = (request.POST.get("nombre") or "").strip()[:80]
         ip = request.META.get("HTTP_CF_CONNECTING_IP") or request.META.get("REMOTE_ADDR")
         try:
             validate_email(email)
@@ -82,11 +83,11 @@ def resultado(request):
             return redirect("diagnostico:hecho")
 
         if not error:
-            texto, motor = engine.generar(datos)
+            texto, motor = engine.generar(datos, nombre)
             diagnostico = Diagnostico.objects.create(
-                email=email, respuestas=datos, teaser=_teaser(datos),
+                email=email, nombre=nombre, respuestas=datos, teaser=_teaser(datos),
                 informe=texto, motor=motor, ip=ip)
-            asunto = "Su diagnóstico de Onto"
+            asunto = f"{nombre}, su diagnóstico de Onto" if nombre else "Su diagnóstico de Onto"
             cuerpo = (
                 f"{texto.strip()}\n\n"
                 f"Si quiere el plan completo de 30 días, con seguimiento semanal:\n"

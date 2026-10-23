@@ -4,6 +4,7 @@ from django.db import models
 
 class Diagnostico(models.Model):
     email = models.EmailField()
+    nombre = models.CharField(max_length=80, blank=True)
     respuestas = models.JSONField(default=dict)
     teaser = models.TextField(blank=True)
     informe = models.TextField(blank=True)

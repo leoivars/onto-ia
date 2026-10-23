@@ -8,7 +8,7 @@
     <div class="panel-head">
       <div>
         <p class="kicker">Panel</p>
-        <h1 class="h1-sm">Hola, {{ perfil.nombre|default:user.email }}.</h1>
+        <h1 class="h1-sm">{% if perfil.nombre %}Hola, {{ perfil.nombre }}.{% else %}Hola.{% endif %}</h1>
         <p class="muted">
           {% if pct == 100 %}Entrevista completa. Puede generar su informe.
           {% else %}Entrevista {{ pct }}% completa: {{ respondidas }} de {{ total }} respuestas.

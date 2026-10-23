@@ -17,6 +17,9 @@
 
     <form method="post" class="card form-card">
       {% csrf_token %}
+      <label for="id_nombre">¿Cómo se llama? (opcional)</label>
+      <input type="text" name="nombre" id="id_nombre" autocomplete="given-name" maxlength="80"
+             placeholder="Para saludarlo por su nombre">
       <label for="id_email">¿A qué correo se lo enviamos?</label>
       <input type="email" name="email" id="id_email" required autocomplete="email"
              placeholder="usted@correo.com">

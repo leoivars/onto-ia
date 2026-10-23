@@ -34,12 +34,14 @@ def _prompt(datos):
     return "\n".join(lineas)
 
 
-def _respaldo(datos):
+def _respaldo(datos, nombre=""):
+    saludo = f"{nombre}, " if nombre else ""
     quiebre = " ".join((datos.get("situacion") or "").split())[:220]
     juicio = " ".join((datos.get("juicio") or "").split())[:180]
     evita = " ".join((datos.get("evita") or "").split())[:180]
     return (
-        f"## Qué está sosteniendo\n\nEl episodio que trae —«{quiebre}»— no es solo una "
+        f"## Qué está sosteniendo\n\n"
+        f"{saludo}el episodio que trae —«{quiebre}»— no es solo una "
         f"situación incómoda: es el punto donde una forma de mirar dejó de funcionar. "
         f"Y esa forma de mirar tiene una frase: «{juicio}». Mientras se repite como si fuera "
         f"un hecho, clausura alternativas.\n\n"
@@ -52,14 +54,17 @@ def _respaldo(datos):
     )
 
 
-def generar(datos):
+def generar(datos, nombre=""):
     """Devuelve (markdown, motor). Nunca falla: si no hay IA, usa la plantilla."""
     if ai.disponible():
         try:
+            prompt = _prompt(datos)
+            if nombre:
+                prompt = f"Nombre de la persona: {nombre}\n{prompt}"
             texto, usage = ai.completar(
-                SISTEMA, _prompt(datos), modelo=settings.AI_MODEL, max_tokens=1200)
+                SISTEMA, prompt, modelo=settings.AI_MODEL, max_tokens=1200)
             if len(texto) > 400:
                 return texto, "ia"
         except ai.AIUnavailable as exc:
             logger.warning("Diagnóstico sin IA: %s", exc)
-    return _respaldo(datos), "local"
+    return _respaldo(datos, nombre), "local"
