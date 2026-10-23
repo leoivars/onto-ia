@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from diagnostico.models import Diagnostico
-from web.models import Lead
+from web.models import Lead, Visita
 
 
 class Command(BaseCommand):
@@ -18,22 +18,27 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--dias-diagnostico", type=int, default=365)
         parser.add_argument("--dias-lead", type=int, default=730)
+        parser.add_argument("--dias-visita", type=int, default=90)
         parser.add_argument("--dry-run", action="store_true")
 
     def handle(self, *args, **opciones):
         ahora = timezone.now()
         corte_diag = ahora - timedelta(days=opciones["dias_diagnostico"])
         corte_lead = ahora - timedelta(days=opciones["dias_lead"])
+        corte_visita = ahora - timedelta(days=opciones["dias_visita"])
 
         diag = Diagnostico.objects.filter(created_at__lt=corte_diag)
         leads = Lead.objects.filter(created_at__lt=corte_lead)
+        visitas = Visita.objects.filter(creada__lt=corte_visita)
 
         if opciones["dry_run"]:
             self.stdout.write(f"[dry-run] diagnósticos a borrar: {diag.count()}")
             self.stdout.write(f"[dry-run] leads a borrar: {leads.count()}")
+            self.stdout.write(f"[dry-run] visitas a borrar: {visitas.count()}")
             return
 
         n_diag, _ = diag.delete()
         n_leads, _ = leads.delete()
+        n_visitas, _ = visitas.delete()
         self.stdout.write(self.style.SUCCESS(
-            f"Borrados {n_diag} diagnósticos y {n_leads} leads vencidos."))
+            f"Borrados {n_diag} diagnósticos, {n_leads} leads y {n_visitas} visitas vencidas."))

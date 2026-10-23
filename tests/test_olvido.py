@@ -87,3 +87,10 @@ class OlvidoTest(TestCase):
         call_command("purgar_datos")
         self.assertEqual(Diagnostico.objects.filter(pk=viejo.pk).count(), 0)
         self.assertEqual(Diagnostico.objects.count(), 1)
+
+    def test_purga_visitas_de_mas_de_90_dias(self):
+        from web.models import Visita
+        vieja = Visita.objects.create(ruta="/", origen="instagram", sesion="x" * 32)
+        Visita.objects.filter(pk=vieja.pk).update(creada=timezone.now() - timedelta(days=120))
+        call_command("purgar_datos")
+        self.assertFalse(Visita.objects.filter(pk=vieja.pk).exists())
