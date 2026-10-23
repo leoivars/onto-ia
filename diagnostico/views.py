@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 from . import engine
 from .models import Diagnostico
 from web import ayuda
+from web.visitas import origen_de
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ def resultado(request):
                 return render(request, "diagnostico/riesgo.html", {"lineas": ayuda.LINEAS})
             diagnostico = Diagnostico.objects.create(
                 email=email, nombre=nombre, respuestas=datos, teaser=_teaser(datos),
-                informe=texto, motor=motor, ip=ip)
+                informe=texto, motor=motor, ip=ip, origen=origen_de(request))
             asunto = f"{nombre}, su diagnóstico de Onto" if nombre else "Su diagnóstico de Onto"
             cuerpo = (
                 f"{texto.strip()}\n\n"
@@ -114,6 +115,12 @@ def resultado(request):
                 diagnostico.save(update_fields=["enviado"])
             except Exception:
                 logger.exception("No se pudo enviar el diagnóstico a %s", email)
+            try:
+                from web.correos import programar as programar_secuencia
+
+                programar_secuencia(email)
+            except Exception:
+                logger.exception("No se pudo programar la secuencia para %s", email)
             request.session.pop("diagnostico", None)
             return render(request, "diagnostico/listo.html", {
                 "enviado": diagnostico.enviado,

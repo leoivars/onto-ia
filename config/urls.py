@@ -18,6 +18,7 @@ urlpatterns = [
     path("ayuda/", wv.ayuda_view, name="ayuda"),
     path("baja/", wv.baja, name="baja"),
     path("baja/<str:token>/", wv.baja_confirmar, name="baja_confirmar"),
+    path("baja-correos/<str:token>/", wv.baja_correos, name="baja_correos"),
     path("red/", include("red.urls")),
     path("registro/", wv.signup, name="signup"),
     path("panel/", wv.dashboard, name="panel"),

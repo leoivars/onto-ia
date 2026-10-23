@@ -16,6 +16,7 @@ class Profile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     nombre = models.CharField("¿Cómo prefiere que lo llamemos?", max_length=120, blank=True)
     consent_at = models.DateTimeField("Consentimiento informado", null=True, blank=True)
+    origen = models.CharField(max_length=60, blank=True)
     plan = models.CharField(max_length=12, choices=PLAN_CHOICES, default=FREE)
     pro_until = models.DateField("Acceso hasta", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -90,3 +91,65 @@ class Lead(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class Visita(models.Model):
+    """Vista de página sin datos personales: sirve para medir el embudo."""
+
+    ruta = models.CharField(max_length=120, db_index=True)
+    referente = models.CharField(max_length=200, blank=True)
+    origen = models.CharField(max_length=60, blank=True, db_index=True)
+    fuente = models.CharField(max_length=60, blank=True)
+    medio = models.CharField(max_length=60, blank=True)
+    campana = models.CharField(max_length=60, blank=True)
+    sesion = models.CharField(max_length=32, db_index=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                on_delete=models.SET_NULL, related_name="visitas")
+    creada = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-creada",)
+        verbose_name = "visita"
+        verbose_name_plural = "visitas"
+
+    def __str__(self):
+        return f"{self.ruta} · {self.origen or 'directo'}"
+
+
+class OptOut(models.Model):
+    """Correo que pidió no recibir más mensajes. Se respeta en toda la secuencia."""
+
+    email = models.EmailField(unique=True)
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "baja de correos"
+        verbose_name_plural = "bajas de correos"
+
+    def __str__(self):
+        return self.email
+
+
+class EmailSecuencia(models.Model):
+    """Un correo programado de la secuencia posterior al diagnóstico."""
+
+    email = models.EmailField(db_index=True)
+    paso = models.PositiveSmallIntegerField()
+    asunto = models.CharField(max_length=200)
+    cuerpo = models.TextField()
+    programado = models.DateTimeField(db_index=True)
+    enviado = models.BooleanField(default=False, db_index=True)
+    enviado_en = models.DateTimeField(null=True, blank=True)
+    error = models.TextField(blank=True)
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("programado",)
+        verbose_name = "correo de secuencia"
+        verbose_name_plural = "correos de secuencia"
+        constraints = [
+            models.UniqueConstraint(fields=["email", "paso"], name="un_correo_por_paso"),
+        ]
+
+    def __str__(self):
+        return f"{self.email} · paso {self.paso}"

@@ -17,6 +17,7 @@ from .models import Lead
 def resumen():
     User = get_user_model()
     from reports.models import Feedback, Report
+    from diagnostico.models import Diagnostico
 
     usuarios = User.objects.filter(is_staff=False)
     total = usuarios.count()
@@ -103,4 +104,50 @@ def resumen():
         "conversiones_diag": conversiones,
         "pct_conversion_diag": round(100 * conversiones / diagnosticos) if diagnosticos else 0,
         "hoy": hoy,
+    }
+
+
+def trafico(dias=30):
+    """Embudo de adquisición: visitas, origen, diagnósticos y registros."""
+    from datetime import timedelta
+
+    from django.utils import timezone as tz
+
+    from .models import Visita
+
+    desde = tz.now() - timedelta(days=dias)
+    visitas = Visita.objects.filter(creada__gte=desde)
+    vistas = visitas.count()
+    sesiones = visitas.values("sesion").distinct().count()
+
+    por_origen = list(
+        visitas.values("origen").annotate(vistas=Count("id"), sesiones=Count("sesion", distinct=True))
+        .order_by("-vistas")[:12])
+    for fila in por_origen:
+        fila["origen"] = fila["origen"] or "directo"
+
+    diag = list(Diagnostico.objects.filter(created_at__gte=desde)
+                .values("origen").annotate(n=Count("id")).order_by("-n"))
+    for fila in diag:
+        fila["origen"] = fila["origen"] or "sin dato"
+
+    registros = list(Profile.objects.filter(created_at__gte=desde)
+                     .values("origen").annotate(n=Count("id")).order_by("-n"))
+    for fila in registros:
+        fila["origen"] = fila["origen"] or "sin dato"
+
+    total_diag = sum(f["n"] for f in diag)
+    total_reg = sum(f["n"] for f in registros)
+
+    return {
+        "dias": dias,
+        "vistas": vistas,
+        "sesiones": sesiones,
+        "por_origen": por_origen,
+        "diagnosticos": total_diag,
+        "diagnosticos_origen": diag,
+        "registros": total_reg,
+        "registros_origen": registros,
+        "pct_diag": round(100 * total_diag / sesiones) if sesiones else 0,
+        "pct_reg": round(100 * total_reg / total_diag) if total_diag else 0,
     }

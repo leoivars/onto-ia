@@ -20,7 +20,9 @@ from reports.models import Report
 
 from .forms import LeadForm, SignupForm
 from .metricas import resumen as resumen_metricas
+from .metricas import trafico
 from .models import InviteCode, Lead, perfil_de
+from .visitas import origen_de
 
 
 def landing(request):
@@ -59,6 +61,7 @@ def signup(request):
         perfil = perfil_de(user)
         perfil.nombre = form.cleaned_data["nombre"].strip()
         perfil.consent_at = timezone.now()
+        perfil.origen = origen_de(request)
         perfil.save()
         login(request, user)
         messages.success(request, "Cuenta creada. Empecemos por conocerlo.")
@@ -93,7 +96,9 @@ def account(request):
 
 @staff_member_required
 def metricas(request):
-    return render(request, "web/metricas.html", {"m": resumen_metricas()})
+    datos = resumen_metricas()
+    datos["trafico"] = trafico()
+    return render(request, "web/metricas.html", {"m": datos})
 
 
 @login_required
@@ -212,3 +217,21 @@ def baja_confirmar(request, token):
     detalle = borrar_por_email(datos.get("email"))
     return render(request, "web/baja_confirmada.html",
                   {"email": datos.get("email"), "detalle": detalle})
+
+
+@require_http_methods(["GET"])
+def baja_correos(request, token):
+    """Baja de la secuencia de correos. No borra datos: para eso está /baja/."""
+    from .models import EmailSecuencia, OptOut
+
+    try:
+        datos = signing.loads(token, salt="baja-correos")
+    except signing.BadSignature:
+        return render(request, "web/baja_error.html",
+                      {"motivo": "El enlace no es válido."}, status=410)
+
+    email = (datos.get("email") or "").strip().lower()
+    OptOut.objects.get_or_create(email=email)
+    EmailSecuencia.objects.filter(email=email, enviado=False).update(
+        enviado=True, error="baja del correo")
+    return render(request, "web/baja_correos.html", {"email": email})

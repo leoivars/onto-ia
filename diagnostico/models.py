@@ -10,6 +10,7 @@ class Diagnostico(models.Model):
     informe = models.TextField(blank=True)
     motor = models.CharField(max_length=10, default="local")
     enviado = models.BooleanField(default=False)
+    origen = models.CharField(max_length=60, blank=True)
     ip = models.GenericIPAddressField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Baja de correos · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Correos</p>
+    <h1 class="h1-sm">Listo, no le escribimos más</h1>
+    <p class="lead">Dimos de baja {{ email }} de la secuencia de seguimiento.</p>
+    <p>Su cuenta y sus informes siguen intactos. Si algún día quiere que eliminemos también los
+      datos, puede pedirlo en <a href="{% url 'baja' %}">/baja/</a>.</p>
+  </div>
+</section>
+{% endblock %}
