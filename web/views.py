@@ -452,8 +452,11 @@ def gestion(request):
             return redirect("gestion")
 
     carpeta = Path(cfg.MEDIA_ROOT) / "publicaciones"
-    historias = sorted(p.stem for p in carpeta.glob("historia-*.jpg"))
-    portadas = sorted(p.stem for p in carpeta.glob("portada-*.jpg"))
+    # La versión sale del mtime: así el panel no muestra una imagen vieja por caché.
+    historias = [{"nombre": p.stem, "version": int(p.stat().st_mtime)}
+                 for p in sorted(carpeta.glob("historia-*.jpg"))]
+    portadas = [{"nombre": p.stem, "version": int(p.stat().st_mtime)}
+                for p in sorted(carpeta.glob("portada-*.jpg"))]
 
     publicadas = Publicacion.objects.filter(estado="publicada").order_by("-publicada_en")[:8]
     cola = Publicacion.objects.filter(estado="aprobada").order_by("programada")[:5]

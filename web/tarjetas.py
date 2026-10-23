@@ -197,47 +197,60 @@ def portada(texto, salida, fondo="verde"):
 
 
 def historia(kicker, lineas, salida, pie="onto.xz.com.ar", fondo="crema"):
-    """Historia 1080x1920: misma paleta que las tarjetas, con aire arriba y abajo."""
+    """Historia 1080x1920. El bloque se compone aparte y se centra por su tinta real."""
+    alto_h = 1920  # la historia es 9:16, no el formato de tarjeta
     color_fondo, tinta, suave = ((CREMA, TINTA, GRIS) if fondo == "crema"
                                  else (VERDE, CREMA, (214, 208, 195)))
-    imagen = Image.new("RGB", (1080, 1920), color_fondo)
-    dibujo = ImageDraw.Draw(imagen)
     margen = 96
 
-    dibujo.text((margen, 150), "Onto.", font=_fuente("DejaVuSans-Bold.ttf", 52), fill=VERDE
-                if fondo == "crema" else CREMA)
-    dibujo.line((margen, 236, 1080 - margen, 236), fill=(210, 202, 187), width=2)
+    # 1. El contenido se dibuja en una capa aparte, empezando en cero.
+    capa = Image.new("RGBA", (ANCHO, alto_h), (0, 0, 0, 0))
+    dibujo = ImageDraw.Draw(capa)
 
-    dibujo.text((margen, 330), kicker.upper(), font=_fuente("DejaVuSans.ttf", 34), fill=suave)
-
-    tamano = 92
-    while tamano > 48:
+    tamano = 132
+    while tamano > 52:
         fuente = _fuente("DejaVuSerif-Bold.ttf", tamano)
-        envueltas = []
-        for linea in lineas:
-            envueltas.extend(_envolver(dibujo, linea, fuente, 1080 - 2 * margen))
-        if len(envueltas) <= 9:
+        partes = [_envolver(dibujo, linea, fuente, ANCHO - 2 * margen) for linea in lineas]
+        if sum(len(g) for g in partes) <= 5:
             break
         tamano -= 6
 
-    alto_linea = int(tamano * 1.24)
-    # Se centra el bloque entre el encabezado y el pie, no pegado arriba.
-    bloques, alto_total = [], 0
-    for linea in lineas:
-        partes = _envolver(dibujo, linea, fuente, 1080 - 2 * margen)
-        bloques.append(partes)
-        alto_total += alto_linea * len(partes) + int(alto_linea * 0.35)
-    y = 400 + max(0, (1300 - alto_total) // 2)
-    for partes in bloques:
-        for parte in partes:
-            dibujo.text((margen, y), parte, font=fuente, fill=tinta)
+    alto_linea = int(tamano * 1.22)
+    y = 0
+    dibujo.text((margen, y), kicker.upper(), font=_fuente("DejaVuSans.ttf", 34),
+                fill=suave + (255,))
+    y += 96
+    for grupo in partes:
+        for parte in grupo:
+            dibujo.text((margen, y), parte, font=fuente, fill=tinta + (255,))
             y += alto_linea
         y += int(alto_linea * 0.35)
 
-    dibujo.line((margen, 1740, 1080 - margen, 1740), fill=(210, 202, 187), width=2)
-    dibujo.text((margen, 1782), pie, font=_fuente("DejaVuSans.ttf", 32), fill=suave)
+    # 2. Se mide la tinta y se centra en la zona útil, entre encabezado y pie.
+    caja = capa.getbbox()
+    alto_contenido = caja[3] - caja[1]
+    # Centro óptico entre la línea de la marca y la del pie.
+    centro_deseado = (236 + (alto_h - 320)) // 2
+    destino = centro_deseado - alto_contenido // 2 - caja[1]
+
+    # 3. Se compone la pieza final.
+    imagen = Image.new("RGB", (ANCHO, alto_h), color_fondo)
+    dibujo = ImageDraw.Draw(imagen)
+    dibujo.text((margen, 150), "Onto.", font=_fuente("DejaVuSans-Bold.ttf", 52),
+                fill=VERDE if fondo == "crema" else CREMA)
+    dibujo.line((margen, 236, ANCHO - margen, 236), fill=(210, 202, 187), width=2)
+
+    imagen = imagen.convert("RGBA")
+    imagen.alpha_composite(capa, (0, destino))
+    imagen = imagen.convert("RGB")
+
+    dibujo = ImageDraw.Draw(imagen)
+    dibujo.line((margen, alto_h - 320, ANCHO - margen, alto_h - 320), fill=(210, 202, 187), width=2)
+    dibujo.text((margen, alto_h - 278), pie, font=_fuente("DejaVuSans.ttf", 32), fill=suave)
 
     salida = Path(salida)
     salida.parent.mkdir(parents=True, exist_ok=True)
     imagen.save(salida, "JPEG", quality=92, optimize=True)
     return salida
+
+

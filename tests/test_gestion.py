@@ -56,4 +56,5 @@ class GestionTest(TestCase):
 
         self._entrar()
         respuesta = self.client.get("/gestion/")
-        self.assertIn("historia-prueba", respuesta.context["historias"])
+        nombres = [h["nombre"] for h in respuesta.context["historias"]]
+        self.assertIn("historia-prueba", nombres)

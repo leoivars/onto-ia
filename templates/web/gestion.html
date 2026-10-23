@@ -90,12 +90,12 @@
     <div class="grid-2">
       {% for h in historias %}
         <div class="card">
-          <img src="https://{{ SITE_DOMAIN }}/ig/{{ h }}.jpg" alt="{{ h }}"
+          <img src="https://{{ SITE_DOMAIN }}/ig/{{ h.nombre }}.jpg?v={{ h.version }}" alt="{{ h.nombre }}"
                style="width:100%; max-width:220px; display:block; margin-bottom:12px; border:1px solid #e3ddd1;">
-          <p class="small" style="margin:0 0 10px;">{{ h }}</p>
+          <p class="small" style="margin:0 0 10px;">{{ h.nombre }}</p>
           <form method="post">{% csrf_token %}
             <input type="hidden" name="accion" value="historia">
-            <input type="hidden" name="archivo" value="{{ h }}">
+            <input type="hidden" name="archivo" value="{{ h.nombre }}">
             <button class="btn btn-sm" type="submit">Publicar historia</button>
           </form>
         </div>
@@ -107,7 +107,7 @@
       <p class="tiny muted">Se suben a mano desde el teléfono al crear cada destacada.</p>
       <ul class="plain-list">
         {% for p in portadas %}
-          <li><a href="/ig/{{ p }}.jpg" target="_blank">{{ p }}</a></li>
+          <li><a href="/ig/{{ p.nombre }}.jpg?v={{ p.version }}" target="_blank">{{ p.nombre }}</a></li>
         {% endfor %}
       </ul>
     {% endif %}
