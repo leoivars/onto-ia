@@ -135,3 +135,109 @@ def tarjeta(texto, salida, pie="Coaching ontológico · onto.xz.com.ar"):
     salida.parent.mkdir(parents=True, exist_ok=True)
     imagen.save(salida, "JPEG", quality=92, optimize=True)
     return salida
+
+
+def perfil(salida, variante="crema"):
+    """Foto de perfil 1080x1080. Pensada para leerse a 40 px y sobrevivir al recorte circular."""
+    fondo, tinta = (CREMA, VERDE) if variante == "crema" else (VERDE, CREMA)
+    imagen = Image.new("RGB", (1080, 1080), fondo)
+    dibujo = ImageDraw.Draw(imagen)
+
+    # La marca completa: una O grande y un punto sólido, no un texto con puntuación.
+    fuente = _fuente("DejaVuSans-Bold.ttf", 470)
+    letra = "O"
+    caja = dibujo.textbbox((0, 0), letra, font=fuente)
+    ancho_o, alto_o = caja[2] - caja[0], caja[3] - caja[1]
+
+    punto = int(alto_o * 0.20)
+    separacion = int(alto_o * 0.06)
+    ancho_total = ancho_o + separacion + punto
+
+    # Área segura: el círculo recorta, así que todo vive dentro del 72% central.
+    izq = (1080 - ancho_total) / 2
+    arriba = (1080 - alto_o) / 2 - caja[1]
+
+    dibujo.text((izq - caja[0], arriba), letra, font=fuente, fill=tinta)
+    centro_y = arriba + caja[1] + alto_o - punto
+    dibujo.ellipse((izq + ancho_o + separacion, centro_y,
+                    izq + ancho_total, centro_y + punto), fill=tinta)
+
+    salida = Path(salida)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    imagen.save(salida, "JPEG", quality=95, optimize=True)
+    return salida
+
+
+def portada(texto, salida, fondo="verde"):
+    """Portada de destacada: 1080x1080, se ve como un círculo de 90 px."""
+    color_fondo, tinta = (VERDE, CREMA) if fondo == "verde" else (CREMA, VERDE)
+    imagen = Image.new("RGB", (1080, 1080), color_fondo)
+    dibujo = ImageDraw.Draw(imagen)
+
+    tamano = 130
+    while tamano > 54:
+        fuente = _fuente("DejaVuSerif-Bold.ttf", tamano)
+        lineas = _envolver(dibujo, texto, fuente, 760)
+        if len(lineas) <= 2:
+            break
+        tamano -= 6
+
+    alto_linea = int(tamano * 1.12)
+    total = alto_linea * len(lineas)
+    y = (1080 - total) / 2
+    for linea in lineas:
+        ancho = dibujo.textlength(linea, font=fuente)
+        dibujo.text(((1080 - ancho) / 2, y), linea, font=fuente, fill=tinta)
+        y += alto_linea
+
+    salida = Path(salida)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    imagen.save(salida, "JPEG", quality=92, optimize=True)
+    return salida
+
+
+def historia(kicker, lineas, salida, pie="onto.xz.com.ar", fondo="crema"):
+    """Historia 1080x1920: misma paleta que las tarjetas, con aire arriba y abajo."""
+    color_fondo, tinta, suave = ((CREMA, TINTA, GRIS) if fondo == "crema"
+                                 else (VERDE, CREMA, (214, 208, 195)))
+    imagen = Image.new("RGB", (1080, 1920), color_fondo)
+    dibujo = ImageDraw.Draw(imagen)
+    margen = 96
+
+    dibujo.text((margen, 150), "Onto.", font=_fuente("DejaVuSans-Bold.ttf", 52), fill=VERDE
+                if fondo == "crema" else CREMA)
+    dibujo.line((margen, 236, 1080 - margen, 236), fill=(210, 202, 187), width=2)
+
+    dibujo.text((margen, 330), kicker.upper(), font=_fuente("DejaVuSans.ttf", 34), fill=suave)
+
+    tamano = 92
+    while tamano > 48:
+        fuente = _fuente("DejaVuSerif-Bold.ttf", tamano)
+        envueltas = []
+        for linea in lineas:
+            envueltas.extend(_envolver(dibujo, linea, fuente, 1080 - 2 * margen))
+        if len(envueltas) <= 9:
+            break
+        tamano -= 6
+
+    alto_linea = int(tamano * 1.24)
+    # Se centra el bloque entre el encabezado y el pie, no pegado arriba.
+    bloques, alto_total = [], 0
+    for linea in lineas:
+        partes = _envolver(dibujo, linea, fuente, 1080 - 2 * margen)
+        bloques.append(partes)
+        alto_total += alto_linea * len(partes) + int(alto_linea * 0.35)
+    y = 400 + max(0, (1300 - alto_total) // 2)
+    for partes in bloques:
+        for parte in partes:
+            dibujo.text((margen, y), parte, font=fuente, fill=tinta)
+            y += alto_linea
+        y += int(alto_linea * 0.35)
+
+    dibujo.line((margen, 1740, 1080 - margen, 1740), fill=(210, 202, 187), width=2)
+    dibujo.text((margen, 1782), pie, font=_fuente("DejaVuSans.ttf", 32), fill=suave)
+
+    salida = Path(salida)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    imagen.save(salida, "JPEG", quality=92, optimize=True)
+    return salida

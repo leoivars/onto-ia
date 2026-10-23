@@ -48,9 +48,21 @@ def id_cuenta():
     return _llamar("GET", "me", fields="id,username")["id"]
 
 
-def crear_contenedor(imagen_url, texto, cuenta=None):
+def crear_contenedor(imagen_url, texto, cuenta=None, alt_texto="", tipo=None):
     cuenta = cuenta or id_cuenta()
-    datos = _llamar("POST", f"{cuenta}/media", image_url=imagen_url, caption=texto)
+    parametros = {"image_url": imagen_url, "caption": texto}
+    if tipo:
+        parametros["media_type"] = tipo
+    if alt_texto:
+        parametros["alt_text"] = alt_texto[:1000]
+    try:
+        datos = _llamar("POST", f"{cuenta}/media", **parametros)
+    except InstagramError as exc:
+        if "alt_text" not in str(exc).lower():
+            raise
+        # La cuenta o la versión de la API no aceptan texto alternativo: se publica sin él.
+        parametros.pop("alt_text", None)
+        datos = _llamar("POST", f"{cuenta}/media", **parametros)
     return datos["id"]
 
 

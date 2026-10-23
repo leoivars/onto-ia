@@ -17,7 +17,7 @@ def generar(nombre, texto, caption="", pie=None, programada=None, fondo=None):
     """Crea el borrador y dibuja la imagen. No publica nada."""
     publicacion, creada = Publicacion.objects.get_or_create(
         nombre=nombre,
-        defaults={"texto": texto, "caption": caption,
+        defaults={"texto": texto, "caption": caption, "alt_texto": texto[:300],
                   "pie": pie or "Coaching ontológico · onto.xz.com.ar",
                   "programada": programada})
     salida = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{nombre}.jpg"
@@ -46,7 +46,9 @@ def publicar(publicacion):
     if publicacion.estado == "publicada":
         return publicacion
     try:
-        contenedor = instagram.crear_contenedor(publicacion.imagen_url, publicacion.caption)
+        alt = publicacion.alt_texto or f"Tarjeta de Onto: {publicacion.texto}"
+        contenedor = instagram.crear_contenedor(publicacion.imagen_url, publicacion.caption,
+                                                alt_texto=alt)
         instagram.esperar_listo(contenedor)
         media_id = instagram.publicar(contenedor)
         datos = instagram.datos_publicacion(media_id)
