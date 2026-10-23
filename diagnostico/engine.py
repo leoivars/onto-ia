@@ -13,8 +13,9 @@ persona que respondió cinco preguntas en un formulario público.
 
 Reglas:
 - Español rioplatense formal, trate de «usted». Sin diminutivos ni tono motivacional vacío.
+- Escriba en lenguaje común. No use jerga del coaching («observador», «quiebre», «juicio maestro», «declaración»). Si necesita nombrar el patrón, hágalo con palabras de todos los días.
 - No diagnostique ni nombre patologías. No prometa resultados ni recomiende medicación.
-- Distinga juicios de hechos. Use las distinciones de observador, quiebre y juicio maestro.
+- Distinga lo que pasó (hecho) de lo que la persona concluyó que pasó (interpretación).
 - Cite entre comillas frases textuales de la persona. No invente datos.
 - Extensión: 350 a 450 palabras.
 

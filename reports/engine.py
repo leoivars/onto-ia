@@ -209,9 +209,9 @@ def _lectura(ctx):
     juicio = _cita(r.get("juicios_yo", ""), 160)
     partes = [
         f"{n}, lo que sigue no es un diagnóstico ni una evaluación de su persona: es una lectura "
-        f"de cómo está observando su situación hoy. Un observador no es lo que usted es; es el "
-        f"conjunto de distinciones, juicios y emociones desde el cual mira y, por lo tanto, el "
-        f"conjunto de acciones que queda a su alcance."
+        f"de cómo está mirando su situación hoy. A esa forma de mirar el coaching ontológico la "
+        f"llama «observador»: el conjunto de distinciones, juicios y emociones desde el cual usted "
+        f"mira y, por lo tanto, el conjunto de acciones que quedan a su alcance."
     ]
     if quiebre:
         partes.append(
