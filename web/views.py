@@ -349,3 +349,11 @@ def desactivar_2fa(request):
     request.session.pop("otp_ok", None)
     messages.success(request, "Segundo factor desactivado. Puede volver a activarlo cuando quiera.")
     return redirect("account")
+
+
+@require_http_methods(["GET"])
+def mi_ip(request):
+    """Muestra la IP con la que el servidor ve a quien entra. Sirve para habilitar el panel."""
+    from .seguridad import ip_cliente
+
+    return render(request, "web/mi_ip.html", {"ip": ip_cliente(request)})

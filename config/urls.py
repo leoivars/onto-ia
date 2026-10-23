@@ -20,6 +20,7 @@ urlpatterns = [
     path("baja/<str:token>/", wv.baja_confirmar, name="baja_confirmar"),
     path("baja-correos/<str:token>/", wv.baja_correos, name="baja_correos"),
     path("ig/<slug:nombre>.jpg", wv.publicacion_imagen, name="publicacion_imagen"),
+    path("mi-ip/", wv.mi_ip, name="mi_ip"),
     path("seguridad/2fa/", wv.configurar_2fa, name="2fa_configurar"),
     path("seguridad/verificar/", wv.verificar_2fa, name="2fa_verificar"),
     path("seguridad/desactivar/", wv.desactivar_2fa, name="2fa_desactivar"),

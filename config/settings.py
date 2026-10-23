@@ -1,5 +1,6 @@
 """Configuración del proyecto Observador (MVP)."""
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,6 +37,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "web.visitas.VisitasMiddleware",
+    "web.seguridad.PanelPorIPMiddleware",
     "web.seguridad.SegundoFactorMiddleware",
 ]
 
@@ -97,6 +99,15 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", str(BASE_DIR / "media"))
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+# Lista blanca de IP para el panel, las métricas y la seguridad (admite CIDR).
+# Vacía = cerrado: esas rutas responden 404 aunque las credenciales sean correctas.
+ADMIN_IPS = [ip.strip() for ip in os.environ.get("ADMIN_IPS", "").split(",") if ip.strip()]
+
+# En la suite de tests, el cliente entra como 127.0.0.1: así las pruebas del panel no dependen
+# de la lista real. Los tests que verifican el bloqueo usan override_settings.
+if "test" in sys.argv and not ADMIN_IPS:
+    ADMIN_IPS = ["127.0.0.1"]
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

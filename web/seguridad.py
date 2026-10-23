@@ -5,6 +5,7 @@ en la base, y cada código de respaldo se guarda con hash y se consume una sola 
 """
 import base64
 import io
+import logging
 import secrets
 
 import pyotp
@@ -13,6 +14,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 RUTAS_LIBRES = ("/seguridad/", "/salir/", "/ingresar/", "/static/", "/media/", "/favicon",
                 "/admin/logout/", "/admin/login/", "/baja/", "/ayuda/")
@@ -93,4 +96,62 @@ class SegundoFactorMiddleware:
                 destino = ("2fa_verificar" if tiene and tiene.confirmado_en
                            else "2fa_configurar")
                 return redirect(f"{reverse(destino)}?next={request.path}")
+        return self.get_response(request)
+
+
+# ------------------------------------------------------------- lista blanca de IP
+
+RUTAS_PROTEGIDAS = ("/admin/", "/metricas/", "/seguridad/")
+
+
+def ip_cliente(request):
+    """IP real detrás de Cloudflare y del proxy: el primero de los encabezados confiables."""
+    for cabecera in ("HTTP_CF_CONNECTING_IP", "HTTP_X_REAL_IP", "HTTP_X_FORWARDED_FOR"):
+        valor = request.META.get(cabecera)
+        if valor:
+            return valor.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "")
+
+
+def ip_permitida(ip, permitidas):
+    import ipaddress
+
+    if not permitidas:
+        return False
+    try:
+        direccion = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    for entrada in permitidas:
+        entrada = (entrada or "").strip()
+        if not entrada:
+            continue
+        try:
+            if direccion in ipaddress.ip_network(entrada, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+class PanelPorIPMiddleware:
+    """El panel, las métricas y la seguridad solo existen para las IP habilitadas.
+
+    Sin ninguna IP cargada, nadie entra: el panel responde 404 y no revela que existe.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from django.conf import settings
+        from django.http import HttpResponse
+
+        if any(request.path.startswith(r) for r in RUTAS_PROTEGIDAS):
+            permitidas = getattr(settings, "ADMIN_IPS", [])
+            if not ip_permitida(ip_cliente(request), permitidas):
+                logger.warning("Acceso al panel bloqueado desde %s (%s)",
+                               ip_cliente(request), request.path)
+                return HttpResponse("No encontrado", status=404,
+                                    content_type="text/plain; charset=utf-8")
         return self.get_response(request)

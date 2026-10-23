@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Mi IP · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Acceso al panel</p>
+    <h1 class="h1-sm">Su IP es esta</h1>
+    <div class="card" style="text-align:center;">
+      <p style="font-size:32px; margin:0;"><code>{{ ip }}</code></p>
+    </div>
+    <p class="lead">Pase este número al administrador del sistema para que habilite el panel.
+      El acceso se abre solo para esa dirección; para el resto, el panel no existe.</p>
+    <p class="tiny muted">La IP puede cambiar si se conecta desde otra red o si su proveedor la
+      rota. En ese caso, vuelva a esta página y pida que la actualicen.</p>
+  </div>
+</section>
+{% endblock %}
