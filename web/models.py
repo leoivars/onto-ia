@@ -217,9 +217,13 @@ class Publicacion(models.Model):
 
     @property
     def imagen_url(self):
+        from pathlib import Path
+
         from django.conf import settings
 
-        return f"https://{settings.SITE_DOMAIN}/ig/{self.nombre}.jpg"
+        ruta = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{self.nombre}.jpg"
+        version = int(ruta.stat().st_mtime) if ruta.exists() else 0
+        return f"https://{settings.SITE_DOMAIN}/ig/{self.nombre}.jpg?v={version}"
 
 
 class MetricaPublicacion(models.Model):

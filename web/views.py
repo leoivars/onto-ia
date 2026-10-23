@@ -261,7 +261,11 @@ def publicacion_imagen(request, nombre):
     if not ruta.exists():
         raise Http404
     respuesta = FileResponse(open(ruta, "rb"), content_type="image/jpeg")
-    respuesta["Cache-Control"] = "public, max-age=31536000, immutable"
+    # Cinco minutos, no un año: estas piezas se regeneran y la caché del borde las retenía.
+    respuesta["Cache-Control"] = "public, max-age=300"
+    respuesta["Last-Modified"] = timezone.localtime(
+        timezone.datetime.fromtimestamp(ruta.stat().st_mtime, tz=timezone.utc)
+    ).strftime("%a, %d %b %Y %H:%M:%S GMT")
     return respuesta
 
 
@@ -441,7 +445,9 @@ def gestion(request):
             if not re.match(r"^historia-[a-z0-9-]{2,40}$", archivo):
                 messages.error(request, "Nombre de historia inválido.")
             else:
-                url = f"https://{cfg.SITE_DOMAIN}/ig/{archivo}.jpg"
+                ruta_archivo = carpeta / f"{archivo}.jpg"
+                version = int(ruta_archivo.stat().st_mtime) if ruta_archivo.exists() else 0
+                url = f"https://{cfg.SITE_DOMAIN}/ig/{archivo}.jpg?v={version}"
                 try:
                     contenedor = instagram.crear_contenedor(url, "", tipo="STORIES")
                     instagram.esperar_listo(contenedor)
