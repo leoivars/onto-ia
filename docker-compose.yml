@@ -25,6 +25,8 @@ services:
     depends_on:
       onto_db:
         condition: service_healthy
+      onto_init:
+        condition: service_completed_successfully
     env_file: .env
     environment:
       DB_HOST: onto_db
