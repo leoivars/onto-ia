@@ -236,3 +236,21 @@ def baja_correos(request, token):
     EmailSecuencia.objects.filter(email=email, enviado=False).update(
         enviado=True, error="baja del correo")
     return render(request, "web/baja_correos.html", {"email": email})
+
+
+@require_http_methods(["GET"])
+def publicacion_imagen(request, nombre):
+    """Expone las imágenes que se publican en redes: solo nombres válidos de esa carpeta."""
+    import re
+    from pathlib import Path
+
+    from django.http import FileResponse, Http404
+
+    if not re.match(r"^[a-z0-9][a-z0-9-]{1,60}$", nombre):
+        raise Http404
+    ruta = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{nombre}.jpg"
+    if not ruta.exists():
+        raise Http404
+    respuesta = FileResponse(open(ruta, "rb"), content_type="image/jpeg")
+    respuesta["Cache-Control"] = "public, max-age=31536000, immutable"
+    return respuesta
