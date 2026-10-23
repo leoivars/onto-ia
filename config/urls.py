@@ -22,6 +22,7 @@ urlpatterns = [
     path("ig/<slug:nombre>.jpg", wv.publicacion_imagen, name="publicacion_imagen"),
     path("seguridad/2fa/", wv.configurar_2fa, name="2fa_configurar"),
     path("seguridad/verificar/", wv.verificar_2fa, name="2fa_verificar"),
+    path("seguridad/desactivar/", wv.desactivar_2fa, name="2fa_desactivar"),
     path("red/", include("red.urls")),
     path("registro/", wv.signup, name="signup"),
     path("panel/", wv.dashboard, name="panel"),

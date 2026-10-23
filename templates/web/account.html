@@ -19,6 +19,28 @@
       </dl>
     </div>
 
+    <div class="card">
+      <p class="kicker">Seguridad</p>
+      {% if totp and totp.confirmado_en %}
+        <p class="small">Segundo factor activo desde el {{ totp.confirmado_en|date:"d/m/Y" }}.
+          {% if user.is_staff %}<strong>Es obligatorio en cuentas de administración.</strong>{% endif %}</p>
+        {% if user.is_staff %}
+          <p class="tiny muted">Para desactivarlo o regenerar los códigos, hay que hacerlo desde el
+            panel de administración.</p>
+        {% else %}
+          <form method="post" action="{% url '2fa_desactivar' %}">
+            {% csrf_token %}
+            <button class="btn btn-ghost full" type="submit">Desactivar el segundo factor</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <p class="small">Además de su contraseña, un código de seis dígitos que cambia cada treinta
+          segundos. {% if user.is_staff %}En cuentas de administración es obligatorio.{% else %}Es
+          opcional, pero recomendable.{% endif %}</p>
+        <a class="btn btn-ghost full" href="{% url '2fa_configurar' %}">Activar el segundo factor</a>
+      {% endif %}
+    </div>
+
     <div class="grid-2">
       <div class="card">
         <p class="kicker">Código de acceso</p>

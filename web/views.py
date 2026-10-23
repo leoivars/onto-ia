@@ -91,7 +91,12 @@ def dashboard(request):
 
 @login_required
 def account(request):
-    return render(request, "web/account.html", {"perfil": perfil_de(request.user)})
+    from . import seguridad
+
+    return render(request, "web/account.html", {
+        "perfil": perfil_de(request.user),
+        "totp": seguridad.dispositivo(request.user),
+    })
 
 
 @staff_member_required
@@ -268,13 +273,15 @@ def configurar_2fa(request):
     from . import seguridad
     from .models import DispositivoTOTP
 
-    if not seguridad.es_administrador(request.user):
-        return redirect("panel")
+    if seguridad.es_administrador(request.user):
+        destino = "admin:index"
+    else:
+        destino = "account"
 
     dispositivo = seguridad.dispositivo(request.user)
     if dispositivo and dispositivo.confirmado_en:
         request.session["otp_ok"] = True
-        return redirect(request.GET.get("next") or "admin:index")
+        return redirect(request.GET.get("next") or destino)
 
     if not dispositivo:
         dispositivo = DispositivoTOTP.objects.create(
@@ -318,8 +325,27 @@ def verificar_2fa(request):
             siguiente = request.POST.get("next") or ""
             if siguiente.startswith("/"):
                 return redirect(siguiente)
-            return redirect("admin:index")
+            if request.user.is_staff:
+                return redirect("admin:index")
+            return redirect("panel")
         error = "Código incorrecto o vencido."
 
     return render(request, "web/2fa_verificar.html", {"error": error,
                                                       "next": request.GET.get("next", "")})
+
+
+@login_required
+@require_POST
+def desactivar_2fa(request):
+    from . import seguridad
+
+    if seguridad.es_administrador(request.user):
+        messages.error(request, "El segundo factor es obligatorio en cuentas de administración.")
+        return redirect("account")
+
+    dispositivo = seguridad.dispositivo(request.user)
+    if dispositivo:
+        dispositivo.delete()
+    request.session.pop("otp_ok", None)
+    messages.success(request, "Segundo factor desactivado. Puede volver a activarlo cuando quiera.")
+    return redirect("account")

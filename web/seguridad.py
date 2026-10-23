@@ -23,6 +23,16 @@ def es_administrador(user):
     return bool(user and user.is_authenticated and (user.is_staff or user.is_superuser))
 
 
+def requiere_verificacion(user):
+    """Para administradores es obligatorio; un cliente solo si lo activó."""
+    if not user or not user.is_authenticated:
+        return False
+    if es_administrador(user):
+        return True
+    existente = dispositivo(user)
+    return bool(existente and existente.confirmado_en)
+
+
 def dispositivo(user):
     from .models import DispositivoTOTP
 
@@ -77,7 +87,7 @@ class SegundoFactorMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if es_administrador(request.user) and not request.session.get("otp_ok"):
+        if requiere_verificacion(request.user) and not request.session.get("otp_ok"):
             if not any(request.path.startswith(r) for r in RUTAS_LIBRES):
                 tiene = dispositivo(request.user)
                 destino = ("2fa_verificar" if tiene and tiene.confirmado_en

@@ -89,3 +89,57 @@ class DosFactoresTest(TestCase):
         self._entrar()
         self.assertContains(self.client.post("/seguridad/verificar/", {"codigo": claros[0]}),
                             "incorrecto")
+
+
+class DosFactoresOpcionalTest(TestCase):
+    """Un cliente puede activarlo si quiere, y desactivarlo cuando quiera."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user("cliente2", email="cli2@ejemplo.test",
+                                             password="clave-larga-123")
+
+    def test_cliente_sin_segundo_factor_entra_normal(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get("/panel/").status_code, 200)
+        self.assertEqual(self.client.get("/cuenta/").status_code, 200)
+
+    def test_cliente_puede_activarlo(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get("/seguridad/2fa/").status_code, 200)
+        dispositivo = DispositivoTOTP.objects.get(user=self.user)
+        respuesta = self.client.post("/seguridad/2fa/",
+                                     {"codigo": pyotp.TOTP(dispositivo.secreto).now()})
+        self.assertContains(respuesta, "Guarde estos códigos")
+        self.assertTrue(self.client.get("/panel/").status_code, 200)
+
+    def test_con_segundo_factor_activo_se_le_pide_el_codigo(self):
+        from django.utils import timezone
+
+        DispositivoTOTP.objects.create(user=self.user, secreto=pyotp.random_base32(),
+                                       confirmado_en=timezone.now())
+        self.client.force_login(self.user)
+        respuesta = self.client.get("/panel/")
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn("/seguridad/verificar/", respuesta["Location"])
+
+    def test_cliente_puede_desactivarlo(self):
+        from django.utils import timezone
+
+        DispositivoTOTP.objects.create(user=self.user, secreto=pyotp.random_base32(),
+                                       confirmado_en=timezone.now())
+        self.client.force_login(self.user)
+        self.client.post("/seguridad/desactivar/")
+        self.assertFalse(DispositivoTOTP.objects.filter(user=self.user).exists())
+        self.assertEqual(self.client.get("/panel/").status_code, 200)
+
+    def test_admin_no_puede_desactivarlo(self):
+        from django.utils import timezone
+
+        staff = User.objects.create_user("admin2", email="a2@ejemplo.test",
+                                         password="clave-larga-123", is_staff=True)
+        DispositivoTOTP.objects.create(user=staff, secreto=pyotp.random_base32(),
+                                       confirmado_en=timezone.now())
+        self.client.force_login(staff)
+        self.client.post("/seguridad/desactivar/")
+        self.assertTrue(DispositivoTOTP.objects.filter(user=staff).exists())

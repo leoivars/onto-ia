@@ -112,6 +112,9 @@ class RedTest(TestCase):
         self.assertEqual(self.client.get(f"/red/documento/{doc.pk}/").status_code, 302)
         User.objects.create_user("staff", password="x", is_staff=True)
         self.client.login(username="staff", password="x")
+        sesion = self.client.session
+        sesion["otp_ok"] = True
+        sesion.save()
         respuesta = self.client.get(f"/red/documento/{doc.pk}/")
         self.assertEqual(respuesta.status_code, 200)
 
