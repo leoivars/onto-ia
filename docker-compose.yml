@@ -52,6 +52,7 @@ services:
     volumes:
       - onto_backups:/backups
       - ./rclone.conf:/root/.config/rclone/rclone.conf:ro
+      - ./hermes-backups:/hermes
     security_opt:
       - no-new-privileges:true
     networks:
