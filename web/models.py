@@ -178,3 +178,42 @@ class ResumenDiario(models.Model):
 
     def __str__(self):
         return f"{self.fecha} · {self.origen} · {self.ruta}: {self.vistas}"
+
+
+class Publicacion(models.Model):
+    """Tarjeta preparada para Instagram. Nace en borrador: nada se publica sin aprobación."""
+
+    ESTADOS = [
+        ("borrador", "Borrador (sin revisar)"),
+        ("aprobada", "Aprobada, esperando día"),
+        ("publicada", "Publicada"),
+        ("error", "Con error"),
+        ("descartada", "Descartada"),
+    ]
+
+    nombre = models.SlugField(max_length=60, unique=True)
+    texto = models.TextField(help_text="Titular que va en la tarjeta.")
+    caption = models.TextField(blank=True, help_text="Texto de la publicación.")
+    pie = models.CharField(max_length=120, default="Coaching ontológico con IA · onto.xz.com.ar")
+    estado = models.CharField(max_length=12, choices=ESTADOS, default="borrador")
+    programada = models.DateTimeField(null=True, blank=True, db_index=True)
+    ig_id = models.CharField(max_length=64, blank=True)
+    permalink = models.URLField(blank=True)
+    error = models.TextField(blank=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+    publicada_en = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("programada", "creado")
+        verbose_name = "publicación"
+        verbose_name_plural = "publicaciones"
+
+    def __str__(self):
+        return f"{self.nombre} · {self.get_estado_display()}"
+
+    @property
+    def imagen_url(self):
+        from django.conf import settings
+
+        return f"https://{settings.SITE_DOMAIN}/ig/{self.nombre}.jpg"
