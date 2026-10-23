@@ -86,7 +86,9 @@ un informe típico consume ~5.000 tokens de entrada y ~2.000 de salida. Con un m
    revisión por abogado, inscripción de la base de datos ante la AAIP y datos del responsable.
 4. **Transparencia de IA.** El sitio declara en landing, precios y cada informe que el texto lo
    produce un modelo. Mantenerlo: no presentarlo como un coach humano.
-5. **Crisis.** Hay detección de señales de riesgo y bloque de derivación (911, 0800-333-2424).
+5. **Crisis.** Hay detección de señales de riesgo y bloque de derivación (911, 148 opción 0,
+   0800 345 1435), con fuente única en `web/ayuda.py`. El diagnóstico público corta el flujo y
+   muestra las líneas sin generar informe ni guardar respuestas.
    Definir protocolo interno y responsables antes de abrir al público.
 6. **Producción.** Postgres, `DEBUG=0`, `ALLOWED_HOSTS`, gunicorn detrás de nginx o Railway,
    backups, y rotación de `SECRET_KEY` fuera del repo.

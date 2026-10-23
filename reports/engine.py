@@ -193,12 +193,11 @@ def parse_secciones(markdown):
 # --------------------------------------------------------------- motor local
 
 def _riesgo(alertas):
+    from web.ayuda import texto_derivacion
+
     return (
         "**Advertencia de alcance.** En sus respuestas aparecen señales que exceden el coaching. "
-        "Este informe no es una intervención en crisis ni un tratamiento. Si hay riesgo para usted "
-        "o para otra persona, comuníquese ahora con el 911 o con la línea de salud mental de su "
-        "provincia (en Mendoza, 0800-333-2424). Un profesional de salud mental puede acompañarlo "
-        "en lo que este proceso no puede resolver."
+        "Este informe no es una intervención en crisis ni un tratamiento. " + texto_derivacion()
     )
 
 

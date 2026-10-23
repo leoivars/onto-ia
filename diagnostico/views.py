@@ -11,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import engine
 from .models import Diagnostico
+from web import ayuda
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,9 @@ def formulario(request):
         errores = {c: "Escriba algo más." for c in CLAVES if len(datos[c]) < 4}
         if not errores and request.POST.get("empresa"):
             return redirect("diagnostico:hecho")
+        if not errores and ayuda.detectar(*datos.values()):
+            # No se guarda nada ni se genera informe: primero, ayuda.
+            return render(request, "diagnostico/riesgo.html", {"lineas": ayuda.LINEAS})
         if not errores:
             request.session["diagnostico"] = datos
             return redirect("diagnostico:resultado")
@@ -81,6 +85,9 @@ def resultado(request):
             error = "Recibimos varios pedidos desde esta conexión. Intente más tarde."
         if not error and request.POST.get("empresa"):
             return redirect("diagnostico:hecho")
+        if not error and ayuda.detectar(*datos.values()):
+            request.session.pop("diagnostico", None)
+            return render(request, "diagnostico/riesgo.html", {"lineas": ayuda.LINEAS})
 
         if not error:
             texto, motor = engine.generar(datos, nombre)

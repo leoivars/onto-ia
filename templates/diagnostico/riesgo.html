@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Antes de seguir · {{ SITE_NAME }}{% endblock %}
+{% block description %}Líneas de ayuda para momentos de crisis.{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Antes de seguir</p>
+    <h1 class="h1-sm">Lo que escribió merece<br>otra clase de ayuda</h1>
+
+    <p class="lead">Por lo que contó, quizás esté atravesando un momento muy duro. Onto escribe
+      informes de coaching: no atiende crisis, no hace diagnósticos clínicos y no reemplaza a un
+      profesional de la salud mental.</p>
+
+    <p>Si hay peligro ahora, para usted o para alguien más, no espere: llame al <strong>911</strong>.
+      Si necesita hablar con alguien en este momento, estas líneas son gratuitas y confidenciales.</p>
+
+    <div class="card" style="margin: 28px 0;">
+      {% for l in lineas %}
+        <p style="margin: 0 0 14px;"><strong>{{ l.numero }}</strong> · {{ l.nombre }}<br>
+          <span class="muted">{{ l.detalle }}</span></p>
+      {% endfor %}
+    </div>
+
+    <p class="muted">No guardamos estas respuestas ni le enviaremos un informe sobre ellas. Cuando
+      quiera, y si tiene sentido para usted, puede volver: hay un lugar para el trabajo de coaching
+      cuando el momento de crisis ya está atendido.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'landing' %}">Volver al inicio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

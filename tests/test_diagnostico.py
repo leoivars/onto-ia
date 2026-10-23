@@ -79,3 +79,22 @@ class DiagnosticoTest(TestCase):
         respuesta = self.client.get("/diagnostico/resultado/")
         self.assertEqual(respuesta.status_code, 302)
         self.assertEqual(respuesta["Location"], "/diagnostico/")
+
+    def test_riesgo_corta_el_flujo_y_muestra_lineas(self):
+        datos = dict(RESPUESTAS)
+        datos["silencio"] = "A mi padre: hay días en que siento que no quiero vivir."
+        with patch("diagnostico.engine.generar") as generar:
+            respuesta = self.client.post("/diagnostico/", datos)
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, "148")
+        self.assertContains(respuesta, "911")
+        generar.assert_not_called()
+        self.assertEqual(Diagnostico.objects.count(), 0)
+        self.assertNotIn("diagnostico", self.client.session)
+
+    def test_riesgo_detecta_aunque_falten_acentos(self):
+        from web import ayuda
+
+        self.assertEqual(ayuda.detectar("Quiero hacerme una autolesión"), ["autolesion"])
+        self.assertEqual(ayuda.detectar("No aguanto más así"), ["no aguanto mas"])
+        self.assertEqual(ayuda.detectar("Tengo una reunión difícil"), [])

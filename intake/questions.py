@@ -132,10 +132,7 @@ FLAT = {q["key"]: {**q, "bloque": b["slug"]} for b in BLOCKS for q in b["questio
 TOTAL = len(FLAT)
 
 # Señales que exigen derivar a ayuda profesional en lugar de seguir el proceso.
-SENALES_RIESGO = [
-    "suicid", "matarme", "quitarme la vida", "no quiero vivir", "no vale la pena vivir",
-    "autolesion", "cortarme", "me golpea", "me pega", "abuso sexual", "violencia familiar",
-]
+from web.ayuda import SENALES as SENALES_RIESGO  # noqa: E402  (fuente única en web/ayuda.py)
 
 
 def respuestas(user):
