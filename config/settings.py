@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "intake",
     "reports",
     "pagos",
+    "diagnostico",
 ]
 
 MIDDLEWARE = [

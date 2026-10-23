@@ -23,6 +23,39 @@ def _post(url, payload, timeout):
         return json.loads(resp.read().decode("utf-8"))
 
 
+def completar(sistema, usuario, modelo=None, max_tokens=None):
+    """Llamada genérica: devuelve (texto, usage). Lanza AIUnavailable si falla."""
+    if not disponible():
+        raise AIUnavailable("Falta AI_API_KEY")
+    payload = {
+        "model": modelo or settings.AI_MODEL,
+        "temperature": 0.7,
+        "max_tokens": max_tokens or settings.AI_MAX_TOKENS,
+        "messages": [
+            {"role": "system", "content": sistema},
+            {"role": "user", "content": usuario},
+        ],
+    }
+    if settings.AI_THINKING == "disabled":
+        payload["thinking"] = {"type": "disabled"}
+    try:
+        data = _post(f"{settings.AI_BASE_URL.rstrip('/')}/chat/completions",
+                     payload, settings.AI_TIMEOUT)
+        eleccion = data["choices"][0]
+        if eleccion.get("finish_reason") == "length":
+            raise AIUnavailable("respuesta truncada por límite de tokens")
+        texto = eleccion["message"]["content"]
+    except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
+        raise AIUnavailable(str(exc)) from exc
+
+    usage = data.get("usage") or {}
+    return texto, {
+        "in": int(usage.get("prompt_tokens") or 0),
+        "out": int(usage.get("completion_tokens") or 0),
+        "cache": int(usage.get("prompt_cache_hit_tokens") or 0),
+    }
+
+
 SYSTEM = """Usted es un coach ontológico con veinte años de práctica, formado en la tradición de \
 Fernando Flores, Rafael Echeverría y Humberto Maturana. Escribe informes de coaching ontológico \
 para adultos de Argentina.

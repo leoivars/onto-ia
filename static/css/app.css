@@ -134,6 +134,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(31, 77, 61, 
 .hint { font-size: .82rem; color: var(--muted); margin: .3rem 0 0; }
 .err { color: var(--danger); font-size: .85rem; margin: .3rem 0 0; }
 .consent { display: flex; gap: .7rem; align-items: flex-start; margin: 1.4rem 0 .4rem; }
+.campo-trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .consent input { margin-top: .35rem; }
 .consent-label { font-size: .86rem; line-height: 1.5; color: #3a3731; font-weight: 400 !important; margin: 0 !important; }
 .inline-form-row { display: flex; gap: .5rem; }

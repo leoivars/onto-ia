@@ -44,4 +44,5 @@ urlpatterns = [
     path("entrevista/", include("intake.urls")),
     path("informes/", include("reports.urls")),
     path("pagos/", include("pagos.urls")),
+    path("diagnostico/", include("diagnostico.urls")),
 ]

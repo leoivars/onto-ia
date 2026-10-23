@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Listo · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Diagnóstico</p>
+    {% if enviado %}
+      <h1 class="h1-sm">Se lo enviamos</h1>
+      <p class="lead">Revise {{ email|default:"su correo" }}. Si no aparece en unos minutos,
+        mirá en spam y marcá "no es spam" para que el próximo llegue.</p>
+    {% else %}
+      <h1 class="h1-sm">No pudimos enviar el correo</h1>
+      <p class="lead">El servidor de correo falló, pero su análisis está acá abajo. Cópielo o
+        guárdelo.</p>
+      <div class="card prose">{{ informe|linebreaks }}</div>
+    {% endif %}
+
+    <div class="cta-row">
+      <a class="btn" href="{% url 'signup' %}">Ver el plan de 30 días</a>
+      <a class="btn btn-ghost" href="{% url 'landing' %}">Volver al inicio</a>
+    </div>
+    <p class="tiny muted">El diagnóstico es una herramienta de reflexión, no un tratamiento ni un
+      diagnóstico clínico.</p>
+  </div>
+</section>
+{% endblock %}

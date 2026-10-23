@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Diagnóstico de 3 minutos · {{ SITE_NAME }}{% endblock %}
+{% block description %}Cinco preguntas para identificar qué está sosteniendo su bloqueo actual. Sin registro, sin costo.{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Diagnóstico · 3 minutos</p>
+    <h1 class="h1-sm">Qué está sosteniendo<br>lo que le pasa</h1>
+    <p class="lead">Cinco preguntas. Al final ve un hallazgo en pantalla y le mandamos el análisis
+      completo por correo. Sin registro y sin costo.</p>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      <div class="campo-trampa" aria-hidden="true">
+        <label>No completar<input type="text" name="empresa" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+      {% for campo in campos %}
+        <div class="field">
+          <label for="id_{{ campo.clave }}">{{ forloop.counter }}. {{ campo.titulo }}</label>
+          <p class="hint">{{ campo.ayuda }}</p>
+          <textarea name="{{ campo.clave }}" id="id_{{ campo.clave }}" rows="3">{{ campo.valor }}</textarea>
+          {% if campo.error %}<p class="err">{{ campo.error }}</p>{% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="cta-row">
+        <button class="btn" type="submit">Ver mi hallazgo</button>
+        <a class="btn btn-ghost" href="{% url 'landing' %}">Volver</a>
+      </div>
+      <p class="tiny muted">Sus respuestas no se publican. <a href="{% url 'legal' %}">Cómo tratamos
+        sus datos</a>.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

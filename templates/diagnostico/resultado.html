@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Su hallazgo · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Su hallazgo</p>
+    <h1 class="h1-sm">Esto es lo que aparece</h1>
+    <div class="card">
+      <p class="lead" style="margin:0">{{ teaser }}</p>
+    </div>
+
+    <h2 class="section-h">El análisis completo, por correo</h2>
+    <p>Le enviamos un texto de unas 400 palabras con tres partes: qué está sosteniendo el patrón,
+      qué le cuesta y una acción concreta para esta semana. Sin costo.</p>
+
+    <form method="post" class="card form-card">
+      {% csrf_token %}
+      <label for="id_email">¿A qué correo se lo enviamos?</label>
+      <input type="email" name="email" id="id_email" required autocomplete="email"
+             placeholder="usted@correo.com">
+      {% if error %}<p class="err">{{ error }}</p>{% endif %}
+      <div class="campo-trampa" aria-hidden="true">
+        <label>No completar<input type="text" name="empresa" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button class="btn full" type="submit">Enviarme el análisis</button>
+      <p class="tiny muted">Un solo correo con su diagnóstico. Después, nada más salvo que usted
+        lo pida.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}
