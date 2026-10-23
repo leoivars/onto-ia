@@ -36,8 +36,30 @@ services:
     networks:
       - onto_net
 
+  onto_backup:
+    build: ./deploy/backup
+    image: onto-backup:latest
+    container_name: onto_backup
+    restart: unless-stopped
+    depends_on:
+      onto_db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DB_HOST: onto_db
+      DB_PORT: "5432"
+      TZ: America/Argentina/Mendoza
+    volumes:
+      - onto_backups:/backups
+      - ./rclone.conf:/root/.config/rclone/rclone.conf:ro
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - onto_net
+
 volumes:
   onto_db:
+  onto_backups:
 
 networks:
   onto_net:
