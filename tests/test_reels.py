@@ -116,3 +116,27 @@ class RutaVideoTest(TestCase):
         self.assertGreaterEqual(esperar.call_args.kwargs.get("intentos", 20), 60)
         publicacion.refresh_from_db()
         self.assertEqual(publicacion.estado, "publicada")
+
+
+@override_settings(PIXABAY_API_KEY="clave-de-prueba")
+class RitmoTest(TestCase):
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_el_texto_entra_en_los_tiempos_medidos(self):
+        if SIN_FFMPEG:
+            self.skipTest("ffmpeg no está instalado")
+        media = Path(settings.MEDIA_ROOT)
+        clip_falso(media / "stock" / "ritmo.mp4")
+        publicacion = Publicacion.objects.create(
+            nombre="reel-ritmo", texto="Primera frase. Segunda frase. Tercera frase.",
+            formato="reel", clip_archivo="stock/ritmo.mp4", clip_modo="vertical",
+            tiempos=[0.0, 1.0, 2.0], bpm=120)
+        salida = cola.render(publicacion, segundos=4)
+        self.assertTrue(salida.exists())
+        self.assertGreater(salida.stat().st_size, 20_000)
+
+    def test_los_bloques_respetan_las_frases(self):
+        from web.video import _repartir_texto
+
+        bloques = _repartir_texto("Una. Dos. Tres.", 3)
+        self.assertEqual(len(bloques), 3)
+        self.assertEqual(bloques[1], "Dos.")

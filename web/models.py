@@ -209,6 +209,10 @@ class Publicacion(models.Model):
     clip_modo = models.CharField(max_length=12, blank=True, help_text="vertical o recorte.")
     video = models.CharField(max_length=200, blank=True,
                              help_text="Ruta del MP4 dentro de media/publicaciones.")
+    tiempos = models.JSONField(default=list, blank=True,
+                               help_text="Segundos donde entra cada bloque de texto, medidos sobre el pulso de la música.")
+    bpm = models.DecimalField(max_digits=5, decimal_places=1, default=0,
+                              help_text="Pulso de la referencia musical, si se midió.")
     estado = models.CharField(max_length=12, choices=ESTADOS, default="borrador")
     programada = models.DateTimeField(null=True, blank=True, db_index=True)
     ig_id = models.CharField(max_length=64, blank=True)

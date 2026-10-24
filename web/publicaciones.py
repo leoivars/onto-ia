@@ -116,7 +116,8 @@ def render(publicacion, segundos=8):
         raise RuntimeError(f"falta el archivo del clip: {entrada}")
     salida = Path(cfg.MEDIA_ROOT) / "publicaciones" / f"{publicacion.nombre}.mp4"
     reel_clip(entrada, publicacion.texto, salida, segundos=segundos,
-              recorte=publicacion.clip_modo == "recorte")
+              recorte=publicacion.clip_modo == "recorte",
+              entradas=list(publicacion.tiempos or []))
     publicacion.video = f"publicaciones/{publicacion.nombre}.mp4"
     publicacion.save(update_fields=["video", "actualizado"])
     return salida
