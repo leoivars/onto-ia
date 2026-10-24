@@ -111,3 +111,18 @@ Nginx sirve `/static/` desde `staticfiles/` y hace proxy al puerto 8001.
 13 pruebas: flujo completo (registro, entrevista, informe, cuota, canje, feedback, exportación,
 borrado), SEO, host no permitido y motor de IA con proveedor simulado. Corren en CI en cada push
 (`.gitlab-ci.yml`), junto con `check` y `makemigrations --check`.
+
+## Entrevista
+
+Núcleo fijo de 37 preguntas y, al terminar, una **segunda ronda** de hasta cinco
+repreguntas armadas sobre lo que la persona escribió (solo hechos, nunca
+interpretación). Es opcional: se puede saltear.
+
+Cada entrevista guarda su **variante** y cada informe la hereda
+(`variante_entrevista`), de modo que dos diseños se pueden comparar con datos
+reales. Para un experimento A/B, definir `INTAKE_AB=fijo-v1,adaptativa-v1`: el
+reparto es estable por usuario.
+
+En `/metricas/` hay un bloque **Entrevista: dónde se cae la gente** con
+iniciadas, terminadas, tasa por bloque, mediana de segundos, repreguntas
+contestadas y resonancia media por variante.
