@@ -107,19 +107,31 @@
       consciente. Si advertimos una cuenta de un menor, la damos de baja.</p>
 
     <h3>11. Planes, precios y renovación</h3>
-    <p>Los planes y sus precios vigentes están publicados en
-      <a href="{% url 'pricing' %}">la página de precios</a>, expresados en pesos argentinos. Los
-      planes pagos son <strong>suscripciones mensuales</strong> que se renuevan automáticamente el
-      mismo día de cada mes mediante el débito autorizado en Mercado Pago, hasta que usted las
-      cancele. La cuota de informes se computa por mes calendario —se renueva el primer día de
-      cada mes— y no se acumula de un mes al siguiente.</p>
-    <p>Puede cancelar la suscripción en cualquier momento desde su cuenta, sin costo y sin
-      expresión de causa. La cancelación detiene las renovaciones futuras y el acceso al plan pago
-      se mantiene hasta el final del período ya abonado. Los datos de su tarjeta no pasan por
-      nuestros servidores: los administra Mercado Pago.</p>
-    <p>Si cambiamos el precio, se lo avisaremos por correo con al menos treinta días de
-      anticipación y el nuevo precio regirá desde la renovación siguiente. Si no está de acuerdo,
-      puede cancelar antes de esa fecha.</p>
+    {% if pagos_activos %}
+      <p>Los planes y sus precios vigentes están publicados en
+        <a href="{% url 'pricing' %}">la página de precios</a>, expresados en pesos argentinos. Los
+        planes pagos son <strong>suscripciones mensuales</strong> que se renuevan automáticamente el
+        mismo día de cada mes mediante el débito autorizado en Mercado Pago, hasta que usted las
+        cancele. La cuota de informes se computa por mes calendario —se renueva el primer día de
+        cada mes— y no se acumula de un mes al siguiente.</p>
+      <p>Puede cancelar la suscripción en cualquier momento desde su cuenta, sin costo y sin
+        expresión de causa. La cancelación detiene las renovaciones futuras y el acceso al plan pago
+        se mantiene hasta el final del período ya abonado. Los datos de su tarjeta no pasan por
+        nuestros servidores: los administra Mercado Pago.</p>
+      <p>Si cambiamos el precio, se lo avisaremos por correo con al menos treinta días de
+        anticipación y el nuevo precio regirá desde la renovación siguiente. Si no está de acuerdo,
+        puede cancelar antes de esa fecha.</p>
+    {% else %}
+      <p>Los planes y sus precios están publicados en
+        <a href="{% url 'pricing' %}">la página de precios</a>, expresados en pesos argentinos.
+        <strong>En esta etapa el servicio no realiza cobros:</strong> el acceso a los planes pagos se
+        otorga por invitación y no se le debitará suma alguna.</p>
+      <p>Cuando se habiliten las contrataciones, los planes pagos serán suscripciones mensuales con
+        renovación automática mediante el débito autorizado en Mercado Pago, cancelables en
+        cualquier momento desde la cuenta, con aviso de treinta días ante cualquier cambio de
+        precio. Publicaremos esa versión de estos términos antes de habilitar el cobro y se lo
+        comunicaremos por correo.</p>
+    {% endif %}
 
     <h3>12. Límites del servicio y situaciones de riesgo</h3>
     <p>El servicio no atiende emergencias. Si usted o alguien cerca está en riesgo, comuníquese
@@ -129,7 +141,9 @@
     <h3 id="arrepentimiento">13. Botón de arrepentimiento</h3>
     <p>Si contrató una suscripción a distancia, puede revocarla dentro de los diez días corridos
       contados desde la contratación, sin costo y sin expresión de causa, conforme al artículo 34
-      de la Ley 24.240 y la Resolución 424/2020 de la Secretaría de Comercio Interior.</p>
+      de la Ley 24.240 y la Resolución 424/2020 de la Secretaría de Comercio Interior.
+      {% if not pagos_activos %}Hoy no hay contrataciones ni cobros habilitados; este derecho regirá
+      desde que se habiliten.{% endif %}</p>
     <p>Para ejercerlo, escriba a
       <a href="mailto:{{ contacto }}?subject=Bot%C3%B3n%20de%20arrepentimiento">{{ contacto }}</a>
       con el asunto «Botón de arrepentimiento», indicando el correo de la cuenta. Confirmaremos la
