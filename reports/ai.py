@@ -128,12 +128,19 @@ def generar_informe(ctx, modelo=None):
         "anterior_resumen": ctx["anterior_resumen"],
         "feedback": ctx["feedback"],
         "alertas": ctx["alertas"],
+        "repreguntas_texto": ctx.get("repreguntas_texto", ""),
     }
     partes = [
         f"Consultante: {ctx['nombre']}",
         f"Entrevista de intake ({ctx['respondidas']} respuestas de {ctx['total']}):",
         ctx["entrevista_texto"],
     ]
+
+    if ctx.get("repreguntas_texto"):
+        partes.append("\n### Segunda ronda (repreguntas y lo que respondió)")
+        partes.append("Estas respuestas son las más concretas del material: úselas cuando "
+                      "necesite un hecho puntual.")
+        partes.append(ctx["repreguntas_texto"])
 
     if ctx["anterior_resumen"]:
         partes.append("\n### Informe anterior (resumen; no lo repita: profundícelo)")

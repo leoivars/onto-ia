@@ -35,6 +35,67 @@
       </div>
     </div>
 
+
+    <h2 class="h2-sm">Entrevista: dónde se cae la gente</h2>
+    <div class="grid-3">
+      <div class="card">
+        <p class="kicker">Iniciadas</p>
+        <p class="big">{{ m.entrevista.iniciadas }}</p>
+        <p class="tiny muted">en los últimos {{ m.entrevista.dias }} días</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Terminadas</p>
+        <p class="big">{{ m.entrevista.completadas }}</p>
+        <p class="tiny muted">{{ m.entrevista.pct_completadas }}% de las que empezaron</p>
+      </div>
+      <div class="card">
+        <p class="kicker">Segunda ronda</p>
+        <p class="big">{{ m.entrevista.repreguntas_contestadas }}</p>
+        <p class="tiny muted">{{ m.entrevista.repreguntas_generadas }} preguntas generadas ·
+          {{ m.entrevista.saltadas }} saltadas · US$ {{ m.entrevista.costo_ronda }}</p>
+      </div>
+    </div>
+
+    {% if m.entrevista.bloques %}
+      <h3 class="h2-sm">Por bloque</h3>
+      <table class="tabla">
+        <thead><tr><th>Bloque</th><th>Abrieron</th><th>Guardaron</th><th>%</th><th>Mediana</th></tr></thead>
+        <tbody>
+          {% for b in m.entrevista.bloques %}
+            <tr>
+              <td>{{ b.titulo }}</td><td>{{ b.abiertos }}</td><td>{{ b.guardados }}</td>
+              <td>{{ b.pct }}%</td>
+              <td>{% if b.segundos %}{{ b.segundos }} s{% else %}—{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="tiny muted">El bloque con peor porcentaje es el que hay que acortar o reescribir.</p>
+    {% endif %}
+
+    {% if m.entrevista.por_variante %}
+      <h3 class="h2-sm">Por diseño de entrevista</h3>
+      <table class="tabla">
+        <thead><tr><th>Variante</th><th>Iniciadas</th><th>Terminadas</th><th>%</th>
+          <th>Informes</th><th>Devoluciones</th><th>Resonancia</th></tr></thead>
+        <tbody>
+          {% for v in m.entrevista.por_variante %}
+            <tr>
+              <td>{{ v.variante }}</td><td>{{ v.n }}</td><td>{{ v.terminadas }}</td><td>{{ v.pct }}%</td>
+              {% for r in m.entrevista.resonancia %}
+                {% if r.variante == v.variante %}
+                  <td>{{ r.informes }}</td><td>{{ r.devoluciones }}</td>
+                  <td>{% if r.media %}{{ r.media }}/5{% else %}—{% endif %}</td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="tiny muted">Comparar variantes exige volumen: con menos de veinte informes por variante,
+        el número es anécdota.</p>
+    {% endif %}
+
     {% if m.trafico.por_origen %}
       <h3 class="h2-sm">De dónde vienen</h3>
       <table class="tabla">

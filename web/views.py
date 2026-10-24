@@ -105,6 +105,9 @@ def metricas(request):
     datos = resumen_metricas()
     datos["trafico"] = trafico()
     datos["historico"] = historico()
+    from .metricas import embudo_entrevista
+
+    datos["entrevista"] = embudo_entrevista()
     from . import analitica_ig
 
     datos["ig"] = analitica_ig.resumen()

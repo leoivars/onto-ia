@@ -14,6 +14,9 @@ class Report(models.Model):
     titulo = models.CharField(max_length=200)
     engine = models.CharField(max_length=10, choices=MOTOR_CHOICES, default="local")
     model_name = models.CharField(max_length=80, blank=True)
+    variante_entrevista = models.CharField(
+        max_length=40, blank=True,
+        help_text="Diseño de entrevista que originó este informe: permite comparar.")
     secciones = models.JSONField(default=list)
     cuerpo = models.TextField(blank=True)
     tokens_in = models.PositiveIntegerField(default=0)

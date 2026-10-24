@@ -36,6 +36,33 @@
       </div>
     {% endfor %}
 
+    {% if entrevista and entrevista.variante.startswith("adaptativa") %}
+      <div class="card review">
+        <div class="review-head">
+          <h3 class="tight">Segunda ronda</h3>
+          {% if repreguntas %}
+            <span class="chip">{{ entrevista.contestadas }}/{{ repreguntas|length }}</span>
+            <a class="linkish" href="{% url 'intake:repreguntas' %}">Editar</a>
+          {% else %}
+            <a class="linkish" href="{% url 'intake:repreguntas' %}">
+              {% if entrevista.saltada %}Responder ahora{% else %}Responder{% endif %}
+            </a>
+          {% endif %}
+        </div>
+        {% if repreguntas %}
+          <dl class="qa">
+            {% for item in repreguntas %}
+              <dt>{{ item.pregunta }}</dt>
+              <dd>{% if item.respuesta %}{{ item.respuesta|linebreaksbr }}{% else %}<span class="muted">Sin responder</span>{% endif %}</dd>
+            {% endfor %}
+          </dl>
+        {% else %}
+          <p class="small">Cinco preguntas armadas sobre sus propias respuestas. Son opcionales y
+            hacen que el informe trabaje sobre hechos y no sobre generalidades.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
     {% if informe and not rehacer %}
       <div class="cta-row">
         <a class="btn" href="{% url 'reports:detalle' informe.pk %}">Ver mi informe</a>

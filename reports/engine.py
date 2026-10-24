@@ -173,6 +173,15 @@ def contexto(user):
         "faltantes": [q["label"] for q in Q.FLAT.values() if not respuestas.get(q["key"])],
     }
     ctx["entrevista_texto"] = _entrevista_texto(ctx)
+    try:
+        from intake import adaptativa as _adaptativa
+
+        entrevista = _adaptativa.entrevista_de(user, crear=False)
+        ctx["variante"] = entrevista.variante if entrevista else ""
+        ctx["repreguntas_texto"] = _adaptativa.texto_para_informe(user)
+    except Exception:  # nunca dejar sin informe por la ronda adaptativa
+        ctx["variante"] = ""
+        ctx["repreguntas_texto"] = ""
     return ctx
 
 
@@ -484,4 +493,5 @@ def generar(user):
         tokens_out=tokens_out,
         tokens_cache=tokens_cache,
         costo_usd=costo,
+        variante_entrevista=ctx.get("variante", ""),
     )

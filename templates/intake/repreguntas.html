@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Repreguntas · Entrevista · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Segunda ronda · {{ items|length }} preguntas · opcional</p>
+    <h1 class="h1-sm">Cinco preguntas sobre lo que ya escribió.</h1>
+    <p class="lead">No son un examen. Salen de sus propias respuestas: son los puntos donde quedó
+      una generalidad y el informe necesita un hecho. Si prefiere no responder, el informe se
+      escribe igual con la primera ronda.</p>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      {% for item in items %}
+        <div class="field">
+          <label for="id_{{ item.key }}">{{ item.pregunta }}</label>
+          {% if item.motivo %}<p class="hint">{{ item.motivo }}</p>{% endif %}
+          <textarea name="{{ item.key }}" id="id_{{ item.key }}" rows="3">{{ item.respuesta }}</textarea>
+        </div>
+      {% endfor %}
+
+      <div class="cta-row">
+        <button class="btn" type="submit">Guardar y continuar</button>
+        <button class="btn btn-ghost" type="submit" name="accion" value="saltar"
+                formnovalidate>Saltear esta ronda</button>
+      </div>
+      <p class="tiny muted">Puede responder solo algunas. Nada de lo que escriba se publica.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

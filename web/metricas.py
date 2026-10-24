@@ -201,3 +201,92 @@ def historico(meses=12):
         cursor = (cursor + timedelta(days=32)).replace(day=1)
 
     return serie
+
+
+def embudo_entrevista(dias=180):
+    """Dónde abandona la gente la entrevista y qué agrega la segunda ronda.
+
+    Todo lo que hace falta para decidir cómo se rediseñará la entrevista:
+    bloques que se abren y no se guardan, tiempo por bloque, repreguntas
+    contestadas, y resonancia del informe según el diseño que las originó.
+    """
+    import statistics
+    from datetime import timedelta
+
+    from django.utils import timezone as tz
+
+    from intake import questions as PQ
+    from intake.models import Entrevista, Paso
+    from reports.models import Report
+
+    desde = tz.now() - timedelta(days=dias)
+    entrevistas = Entrevista.objects.filter(iniciada__gte=desde)
+    iniciadas = entrevistas.count()
+    completadas = entrevistas.filter(completada__isnull=False).count()
+
+    por_variante = []
+    for fila in entrevistas.values("variante").annotate(
+            n=Count("id"),
+            terminadas=Count("id", filter=Q(completada__isnull=False))).order_by("-n"):
+        por_variante.append({
+            "variante": fila["variante"] or "sin dato",
+            "n": fila["n"],
+            "terminadas": fila["terminadas"],
+            "pct": round(100 * fila["terminadas"] / fila["n"]) if fila["n"] else 0,
+        })
+
+    pasos = Paso.objects.filter(entrevista__iniciada__gte=desde)
+    bloques = []
+    for bloque in PQ.BLOCKS:
+        del_bloque = pasos.filter(slug=bloque["slug"])
+        abiertos = del_bloque.count()
+        guardados = del_bloque.filter(guardado__isnull=False)
+        segundos = [p.segundos for p in guardados if p.segundos]
+        bloques.append({
+            "slug": bloque["slug"],
+            "titulo": bloque["titulo"],
+            "abiertos": abiertos,
+            "guardados": guardados.count(),
+            "pct": round(100 * guardados.count() / abiertos) if abiertos else 0,
+            "segundos": int(statistics.median(segundos)) if segundos else 0,
+        })
+
+    con_repreguntas = entrevistas.exclude(repreguntas=[]).count()
+    saltadas = entrevistas.filter(saltada=True).count()
+    contestadas = 0
+    for entrevista in entrevistas.exclude(repreguntas=[]):
+        contestadas += entrevista.contestadas
+    generadas = sum(len(e.repreguntas or []) for e in entrevistas)
+
+    costo_ronda = float(entrevistas.aggregate(t=Sum("costo_usd"))["t"] or 0)
+
+    resonancia = []
+    for fila in (Report.objects.filter(created_at__gte=desde)
+                 .values("variante_entrevista")
+                 .annotate(informes=Count("id")).order_by("-informes")):
+        variante = fila["variante_entrevista"] or "sin dato"
+        notas = Report.objects.filter(created_at__gte=desde,
+                                      variante_entrevista=fila["variante_entrevista"]) \
+                              .values_list("feedbacks__resonancia", flat=True)
+        notas = [n for n in notas if n]
+        resonancia.append({
+            "variante": variante,
+            "informes": fila["informes"],
+            "devoluciones": len(notas),
+            "media": round(sum(notas) / len(notas), 1) if notas else 0,
+        })
+
+    return {
+        "dias": dias,
+        "iniciadas": iniciadas,
+        "completadas": completadas,
+        "pct_completadas": round(100 * completadas / iniciadas) if iniciadas else 0,
+        "por_variante": por_variante,
+        "bloques": bloques,
+        "con_repreguntas": con_repreguntas,
+        "saltadas": saltadas,
+        "repreguntas_generadas": generadas,
+        "repreguntas_contestadas": contestadas,
+        "costo_ronda": round(costo_ronda, 4),
+        "resonancia": resonancia,
+    }
