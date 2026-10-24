@@ -27,11 +27,27 @@
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:22px;">
       {% for t in tarjetas %}
         <div class="card" style="padding:0; overflow:hidden;">
-          <a href="{{ t.p.imagen_url }}" target="_blank">
-            <img src="{{ t.p.imagen_url }}" alt="{{ t.p.texto }}"
-                 style="width:100%; display:block; aspect-ratio:4/5; object-fit:cover;">
-          </a>
+          {% if t.p.es_reel and t.p.tiene_video %}
+            <video src="{{ t.p.video_url }}" poster="{{ t.p.imagen_url }}" controls preload="none"
+                   playsinline style="width:100%; display:block; aspect-ratio:9/16; object-fit:cover;
+                                      background:#111;"></video>
+          {% elif t.p.es_reel %}
+            <div style="aspect-ratio:9/16; display:flex; align-items:center; justify-content:center;
+                        background:#1f2a24; color:#cfc7b6; text-align:center; padding:20px;">
+              <p class="tiny" style="margin:0;">Reel sin video todavía.<br>
+                {% if t.p.clip_archivo %}Se renderiza en la próxima corrida (cada 3 horas).{% else %}Sin clip: revise la búsqueda.{% endif %}</p>
+            </div>
+          {% else %}
+            <a href="{{ t.p.imagen_url }}" target="_blank">
+              <img src="{{ t.p.imagen_url }}" alt="{{ t.p.texto }}"
+                   style="width:100%; display:block; aspect-ratio:4/5; object-fit:cover;">
+            </a>
+          {% endif %}
           <div style="padding:18px;">
+            {% if t.p.es_reel %}
+              <p class="tiny muted" style="margin:0 0 6px;">Reel · {{ t.p.consulta|default:"sin búsqueda" }}
+                {% if t.p.clip_modo == "recorte" %}· recortado de 4K{% endif %}</p>
+            {% endif %}
             <p style="margin:0 0 10px; font-weight:600; line-height:1.35;">{{ t.p.texto }}</p>
 
             {% if t.parecido >= 0.6 %}
