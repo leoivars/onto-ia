@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Report(models.Model):
@@ -85,3 +86,33 @@ class InformeEnCola(models.Model):
 
     def __str__(self):
         return f"{self.user} · {self.get_estado_display()}"
+
+
+class AuditoriaIA(models.Model):
+    """Constancia de cada envío a un modelo externo: qué salió, sin guardar el texto.
+
+    Permite auditar el circuito: se compara el hash con el texto original del lado
+    del servidor y se verifica cuántas sustituciones se hicieron.
+    """
+
+    CLASES = [("informe", "Informe"), ("ronda", "Ronda adaptativa")]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="auditorias_ia")
+    cuando = models.DateTimeField(default=timezone.now)
+    modelo = models.CharField(max_length=80, blank=True)
+    clase = models.CharField(max_length=20, choices=CLASES, default="informe")
+    sha = models.CharField(max_length=40, help_text="Huella del texto enviado, no el texto.")
+    caracteres = models.PositiveIntegerField(default=0)
+    sustituciones = models.PositiveIntegerField(default=0)
+    tokens_in = models.PositiveIntegerField(default=0)
+    tokens_out = models.PositiveIntegerField(default=0)
+    costo = models.DecimalField(max_digits=8, decimal_places=5, default=0)
+
+    class Meta:
+        ordering = ("-cuando",)
+        verbose_name = "envío a IA"
+        verbose_name_plural = "envíos a IA"
+
+    def __str__(self):
+        return f"{self.get_clase_display()} · {self.modelo} · {self.cuando:%d/%m/%Y %H:%M}"

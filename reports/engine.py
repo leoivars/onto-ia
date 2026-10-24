@@ -7,7 +7,7 @@ from django.db.models import Max
 
 from intake import questions as Q
 
-from . import ai
+from . import ai, anonimizacion
 from .models import Report
 
 logger = logging.getLogger(__name__)
@@ -447,6 +447,39 @@ def _local(ctx):
 
 # --------------------------------------------------------------- generación
 
+def _ctx_anonimo(ctx):
+    """Copia del contexto con lo identificatorio reemplazado por marcas.
+
+    Devuelve (contexto_para_enviar, mapa). El mapa no sale del servidor: es lo que
+    permite volver a poner los nombres en el informe terminado.
+    """
+    from types import SimpleNamespace
+
+    from . import anonimizacion
+
+    mapa = {}
+    envio = dict(ctx)
+    nombre = ctx.get("nombre", "")
+
+    for campo in ("entrevista_texto", "anterior_resumen", "repreguntas_texto"):
+        valor = envio.get(campo)
+        if valor:
+            envio[campo], mapa = anonimizacion.anonimizar(valor, nombre=nombre, mapa=mapa)
+
+    if nombre:
+        envio["nombre"], mapa = anonimizacion.anonimizar(nombre, nombre=nombre, mapa=mapa)
+
+    fb = ctx.get("feedback")
+    if fb:
+        envio["feedback"] = SimpleNamespace(
+            resonancia=fb.resonancia,
+            aciertos=anonimizacion.anonimizar(fb.aciertos or "", nombre=nombre, mapa=mapa)[0],
+            desaciertos=anonimizacion.anonimizar(fb.desaciertos or "", nombre=nombre, mapa=mapa)[0],
+            profundizar=anonimizacion.anonimizar(fb.profundizar or "", nombre=nombre, mapa=mapa)[0],
+        )
+    return envio, mapa
+
+
 def generar(user):
     ctx = contexto(user)
     secciones, motor, modelo = None, "local", ""
@@ -458,9 +491,12 @@ def generar(user):
     if not permitido:
         logger.warning("Sin llamada a IA para %s: %s", user.pk, bloqueo)
 
+    mapa = {}
     if ai.disponible() and permitido:
         try:
-            texto, usage = ai.generar_informe(ctx, elegido)
+            envio, mapa = _ctx_anonimo(ctx)
+            texto, usage = ai.generar_informe(envio, elegido)
+            texto = anonimizacion.restaurar(texto, mapa)
             parseadas = parse_secciones(texto)
             if len(parseadas) >= 5:
                 secciones, motor, modelo = parseadas, "ia", elegido
@@ -480,6 +516,13 @@ def generar(user):
 
     numero = (Report.objects.filter(user=user).aggregate(m=Max("numero"))["m"] or 0) + 1
     costo = calcular_costo(tokens_in, tokens_out, tokens_cache, modelo=modelo) if motor == "ia" else 0
+
+    if motor == "ia" and mapa:
+        try:
+            anonimizacion.registrar(user, modelo, ctx["entrevista_texto"], mapa,
+                                    {"in": tokens_in, "out": tokens_out}, costo)
+        except Exception:  # la auditoría nunca debe impedir el informe
+            logger.exception("No se pudo registrar la auditoría de IA")
 
     return Report.objects.create(
         user=user,

@@ -54,7 +54,9 @@ class MotorIATest(TestCase):
         payload = mock.call_args[0][1]
         self.assertEqual(payload["model"], "modelo-de-prueba")
         self.assertIn("Entrevista de intake", payload["messages"][1]["content"])
-        self.assertIn("Mariana", payload["messages"][1]["content"])
+        # El nombre no viaja al proveedor: sale pseudonimizado y se restaura al volver.
+        self.assertNotIn("Mariana", payload["messages"][1]["content"])
+        self.assertIn("Mariana", informe.cuerpo)
 
     def test_el_feedback_entra_en_el_siguiente_informe(self):
         with patch("reports.ai._post", return_value=PAYLOAD) as mock:

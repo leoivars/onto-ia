@@ -14,7 +14,7 @@ import re
 from django.conf import settings
 from django.utils import timezone
 
-from reports import ai
+from reports import ai, anonimizacion
 from reports.engine import calcular_costo
 
 from . import questions as Q
@@ -125,6 +125,9 @@ def generar(user, forzar=False):
     if not material.strip():
         return entrevista, "sin respuestas"
 
+    nombre = (Q.respuestas(user).get("contexto_nombre") or "").strip()
+    material, mapa = anonimizacion.anonimizar(material, nombre=nombre)
+
     partes = [
         "Entrevista de primera ronda:",
         material,
@@ -133,11 +136,18 @@ def generar(user, forzar=False):
         partes.append("\nBloques con respuestas breves o generales:\n- " + "\n- ".join(flacos))
     partes.append("\nDevuelva el arreglo JSON con las repreguntas.")
 
+    pedido = "\n".join(partes)
     try:
-        texto, uso = ai.completar(SISTEMA, "\n".join(partes), max_tokens=1200)
+        texto, uso = ai.completar(SISTEMA, pedido, max_tokens=1200)
     except ai.AIUnavailable as exc:
         log.warning("ronda adaptativa sin motor: %s", exc)
         return entrevista, str(exc)
+
+    texto = anonimizacion.restaurar(texto, mapa)
+    try:
+        anonimizacion.registrar(user, settings.AI_MODEL, pedido, mapa, uso, 0, clase="ronda")
+    except Exception:  # la auditoría no debe frenar la ronda
+        log.exception("sin auditoría para la ronda")
 
     repreguntas = _limpiar(texto)
     entrevista.repreguntas = repreguntas

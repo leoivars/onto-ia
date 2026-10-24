@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Feedback, Report
+from .models import AuditoriaIA, Feedback, Report
 
 
 class FeedbackInline(admin.StackedInline):
@@ -22,3 +22,22 @@ class ReportAdmin(admin.ModelAdmin):
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = ("report", "resonancia", "created_at")
     list_filter = ("resonancia",)
+
+
+@admin.register(AuditoriaIA)
+class AuditoriaIAAdmin(admin.ModelAdmin):
+    """Solo lectura: es una constancia, no un registro editable."""
+
+    list_display = ("cuando", "user", "clase", "modelo", "sustituciones", "caracteres",
+                    "tokens_in", "tokens_out")
+    list_filter = ("clase", "modelo")
+    search_fields = ("user__email", "sha")
+    date_hierarchy = "cuando"
+    readonly_fields = ("user", "cuando", "modelo", "clase", "sha", "caracteres", "sustituciones",
+                       "tokens_in", "tokens_out", "costo")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
