@@ -209,6 +209,8 @@ class Publicacion(models.Model):
     clip_modo = models.CharField(max_length=12, blank=True, help_text="vertical o recorte.")
     video = models.CharField(max_length=200, blank=True,
                              help_text="Ruta del MP4 dentro de media/publicaciones.")
+    guion = models.TextField(blank=True,
+                             help_text="Lo que se dice en voz alta. Si está vacío, se lee el texto de la tarjeta.")
     tiempos = models.JSONField(default=list, blank=True,
                                help_text="Segundos donde entra cada bloque de texto, medidos sobre el pulso de la música.")
     bpm = models.DecimalField(max_digits=5, decimal_places=1, default=0,

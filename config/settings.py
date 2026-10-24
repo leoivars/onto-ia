@@ -132,6 +132,15 @@ PLAN_PRICE_ARS = {"free": 0, "pro": 6900, "estudio": 24900}
 PLAN_NOMBRES = {"free": "Gratuito", "pro": "Profundo", "estudio": "Estudio"}
 
 # ------------------------- Mercado Pago -------------------------
+# Voz para los reels. Se usa el proveedor que tenga clave; sin ninguna, los
+# reels salen sin voz y el sistema lo informa en vez de fallar.
+AZURE_SPEECH_KEY = os.environ.get("AZURE_SPEECH_KEY", "")
+AZURE_SPEECH_REGION = os.environ.get("AZURE_SPEECH_REGION", "")
+AZURE_VOZ = os.environ.get("AZURE_VOZ", "es-AR-TomasNeural")
+ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
+ELEVENLABS_VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "")
+ELEVENLABS_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_multilingual_v2")
+
 # Pixabay: banco de imágenes y clips para las piezas de redes.
 PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "")
 PIXABAY_API = os.environ.get("PIXABAY_API", "https://pixabay.com/api/")

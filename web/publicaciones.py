@@ -101,10 +101,15 @@ def programar(publicacion, dias=1):
     return publicacion
 
 
-def render(publicacion, segundos=8):
-    """Genera el MP4 del reel a partir del clip. Devuelve la ruta o None."""
+def render(publicacion, segundos=None):
+    """Genera el MP4 del reel: clip, texto al ritmo y, si hay proveedor, voz.
+
+    Con voz, la duración la manda el audio: el texto se reparte sobre lo que dura la
+    lectura. Sin voz, se usa el largo pedido (8 s por defecto).
+    """
     from django.conf import settings as cfg
 
+    from . import voz as voz_api
     from .video import reel_clip
 
     if not publicacion.es_reel:
@@ -114,10 +119,28 @@ def render(publicacion, segundos=8):
     entrada = Path(cfg.MEDIA_ROOT) / publicacion.clip_archivo
     if not entrada.exists():
         raise RuntimeError(f"falta el archivo del clip: {entrada}")
+
+    audio = None
+    entradas = list(publicacion.tiempos or [])
+    guion = (publicacion.guion or publicacion.texto or "").strip()
+
+    if voz_api.disponible() and guion:
+        destino_audio = Path(cfg.MEDIA_ROOT) / "voz" / f"{publicacion.nombre}.mp3"
+        voz_api.generar(guion, destino_audio)
+        audio = destino_audio
+        duracion = voz_api.duracion(destino_audio)
+        segundos = round(duracion + 0.8, 2)
+        # Si los tiempos no fueron medidos sobre una música, se reparten sobre la voz.
+        if not entradas:
+            entradas = voz_api.repartir(duracion, 3)
+            publicacion.tiempos = entradas
+            publicacion.save(update_fields=["tiempos", "actualizado"])
+
+    segundos = segundos or 8
     salida = Path(cfg.MEDIA_ROOT) / "publicaciones" / f"{publicacion.nombre}.mp4"
     reel_clip(entrada, publicacion.texto, salida, segundos=segundos,
               recorte=publicacion.clip_modo == "recorte",
-              entradas=list(publicacion.tiempos or []))
+              entradas=entradas, audio=audio)
     publicacion.video = f"publicaciones/{publicacion.nombre}.mp4"
     publicacion.save(update_fields=["video", "actualizado"])
     return salida

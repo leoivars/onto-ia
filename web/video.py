@@ -181,7 +181,7 @@ def reel(texto, salida, fondo=None, segundos=8, fps=30):
 
 
 def reel_clip(video, texto, salida, segundos=8, recorte=False, inicio=0, fps=30,
-              entradas=None):
+              entradas=None, audio=None):
     """Reel a partir de un clip de stock: recorte 9:16, duotono de marca y texto.
 
     `recorte=True` toma un clip horizontal y lo recorta al centro; con 4K alcanza
@@ -238,12 +238,22 @@ def reel_clip(video, texto, salida, segundos=8, recorte=False, inicio=0, fps=30,
             "ffmpeg", "-y",
             "-stream_loop", "-1", "-ss", str(inicio), "-t", str(segundos), "-i", str(video),
             *entradas_ffmpeg,
-            "-filter_complex", filtro, "-map", "[v]",
-            "-t", str(segundos), "-r", str(fps),
-            "-c:v", "libx264", "-preset", "medium", "-crf", "21",
-            "-profile:v", "high", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
-            "-an", str(salida),
         ]
+        if audio and Path(audio).exists():
+            orden += ["-i", str(audio)]
+        orden += ["-filter_complex", filtro, "-map", "[v]"]
+        if audio and Path(audio).exists():
+            # Voz normalizada: -16 LUFS es el nivel de podcast, cómodo en el teléfono.
+            # Índices: 0 video, 1 velo, 2..N+1 capas de texto → el audio va después.
+            orden += ["-map", f"{len(capas) + 2}:a",
+                      "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+                      "-c:a", "aac", "-b:a", "128k"]
+        else:
+            orden += ["-an"]
+        orden += ["-t", str(segundos), "-r", str(fps),
+                  "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+                  "-profile:v", "high", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+                  str(salida)]
         proceso = subprocess.run(orden, capture_output=True, text=True)
         if proceso.returncode != 0:
             raise RuntimeError(proceso.stderr[-800:])
