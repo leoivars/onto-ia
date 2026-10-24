@@ -132,6 +132,10 @@ PLAN_PRICE_ARS = {"free": 0, "pro": 6900, "estudio": 24900}
 PLAN_NOMBRES = {"free": "Gratuito", "pro": "Profundo", "estudio": "Estudio"}
 
 # ------------------------- Mercado Pago -------------------------
+# Pixabay: banco de imágenes y clips para las piezas de redes.
+PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "")
+PIXABAY_API = os.environ.get("PIXABAY_API", "https://pixabay.com/api/")
+
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "")
 MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY", "")
 MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
