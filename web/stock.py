@@ -74,23 +74,21 @@ def buscar_videos(consulta, limite=20, vertical=True, orden="popular", duracion=
     clips = []
     for hit in datos.get("hits", []):
         variantes = hit.get("videos") or {}
-        mejor = None
+        disponibles = []
         for nombre in ("large", "medium", "small", "tiny"):
             v = variantes.get(nombre) or {}
-            if not v.get("url"):
-                continue
-            mejor = {
-                "url": v["url"],
-                "ancho": int(v.get("width") or 0),
-                "alto": int(v.get("height") or 0),
-                "bytes": int(v.get("size") or 0),
-                "calidad": nombre,
-            }
-            # large suele ser 1920 de alto; medium alcanza para 1080x1920.
-            if mejor["alto"] >= 1920:
-                break
-        if not mejor:
+            if v.get("url"):
+                disponibles.append({
+                    "url": v["url"],
+                    "ancho": int(v.get("width") or 0),
+                    "alto": int(v.get("height") or 0),
+                    "bytes": int(v.get("size") or 0),
+                    "calidad": nombre,
+                })
+        if not disponibles:
             continue
+        # La mejor variante es la de mayor superficie, no la última de la lista.
+        mejor = max(disponibles, key=lambda v: v["ancho"] * v["alto"])
         clips.append({
             "id": hit.get("id"),
             "tipo": "video",
@@ -136,20 +134,31 @@ def buscar_fotos(consulta, limite=20, vertical=True, orden="popular"):
 
 
 def elegir(recursos, minimo_alto=1280, duracion=(4, 20)):
-    """Elige el mejor recurso para un reel 1080x1920: vertical, nítido y con movimiento justo."""
+    """Elige el mejor recurso para un reel 1080x1920.
+
+    Regla: se prefieren los verticales. Un horizontal solo sirve si es 4K, porque
+    al recortarlo a 9:16 quedan 1215x2160 y sobra resolución; con 1080p el recorte
+    daría 607 de ancho y habría que inventar píxeles.
+    """
     candidatos = []
     for r in recursos:
-        if r["alto"] < minimo_alto or r["ancho"] < 720:
-            continue
         relacion = r["ancho"] / r["alto"] if r["alto"] else 0
-        if relacion > 0.8:  # descarta apaisados y cuadrados
-            continue
+        vertical = relacion <= 0.8
+        if vertical:
+            if r["alto"] < minimo_alto or r["ancho"] < 720:
+                continue
+            modo = "vertical"
+        else:
+            if r["alto"] < 2160:  # horizontal: solo si es 4K
+                continue
+            modo = "recorte"
         if r["tipo"] == "video" and not (duracion[0] <= r["duracion"] <= duracion[1]):
             continue
-        candidatos.append(r)
+        candidatos.append({**r, "modo": modo})
     if not candidatos:
         return None
-    candidatos.sort(key=lambda r: (r["alto"] >= 1920, r["alto"] * r["ancho"]))
+    # Primero los verticales, después los de mayor resolución.
+    candidatos.sort(key=lambda r: (r["modo"] == "vertical", r["alto"] * r["ancho"]))
     return candidatos[-1]
 
 

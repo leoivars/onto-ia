@@ -66,6 +66,29 @@ def crear_contenedor(imagen_url, texto, cuenta=None, alt_texto="", tipo=None):
     return datos["id"]
 
 
+def crear_contenedor_reel(video_url, texto, cuenta=None, alt_texto="", portada_segundo=0):
+    """Contenedor de Reel. Instagram descarga el video desde la URL pública."""
+    cuenta = cuenta or id_cuenta()
+    parametros = {
+        "media_type": "REELS",
+        "video_url": video_url,
+        "caption": texto,
+        "share_to_feed": "true",
+    }
+    if portada_segundo:
+        parametros["thumb_offset"] = int(portada_segundo * 1000)
+    if alt_texto:
+        parametros["alt_text"] = alt_texto[:1000]
+    try:
+        datos = _llamar("POST", f"{cuenta}/media", **parametros)
+    except InstagramError as exc:
+        if "alt_text" not in str(exc).lower():
+            raise
+        parametros.pop("alt_text", None)
+        datos = _llamar("POST", f"{cuenta}/media", **parametros)
+    return datos["id"]
+
+
 def esperar_listo(contenedor, intentos=20, pausa=3):
     for _ in range(intentos):
         datos = _llamar("GET", contenedor, fields="status_code,status")

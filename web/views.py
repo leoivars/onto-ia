@@ -271,6 +271,26 @@ def publicacion_imagen(request, nombre):
     return respuesta
 
 
+def publicacion_video(request, nombre):
+    """Expone los reels en /ig/<nombre>.mp4: Instagram los descarga desde acá."""
+    import re
+    from email.utils import formatdate
+    from pathlib import Path
+
+    from django.http import FileResponse, Http404
+
+    if not re.match(r"^[a-z0-9][a-z0-9-]{1,60}$", nombre):
+        raise Http404
+    ruta = Path(settings.MEDIA_ROOT) / "publicaciones" / f"{nombre}.mp4"
+    if not ruta.exists():
+        raise Http404
+    respuesta = FileResponse(open(ruta, "rb"), content_type="video/mp4")
+    respuesta["Cache-Control"] = "public, max-age=300"
+    respuesta["Last-Modified"] = formatdate(ruta.stat().st_mtime, usegmt=True)
+    respuesta["Accept-Ranges"] = "bytes"
+    return respuesta
+
+
 # --------------------------------------------------------------- segundo factor
 
 @login_required

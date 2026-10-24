@@ -66,13 +66,25 @@ class StockTest(TestCase):
         elegido = stock.elegir(clips)
         self.assertEqual(elegido["id"], 111)
 
-    def test_descarta_apaisados_y_clips_largos(self):
+    def test_descarta_apaisados_de_baja_resolucion_y_clips_largos(self):
         clips = [
             {"id": 1, "tipo": "video", "ancho": 1920, "alto": 1080, "duracion": 8, "archivo": "x"},
             {"id": 2, "tipo": "video", "ancho": 1080, "alto": 1920, "duracion": 60, "archivo": "y"},
             {"id": 3, "tipo": "video", "ancho": 540, "alto": 960, "duracion": 8, "archivo": "z"},
         ]
         self.assertIsNone(stock.elegir(clips))
+
+    def test_acepta_horizontal_4k_con_recorte(self):
+        clips = [{"id": 9, "tipo": "video", "ancho": 3840, "alto": 2160, "duracion": 10, "archivo": "a"}]
+        elegido = stock.elegir(clips)
+        self.assertEqual(elegido["modo"], "recorte")
+
+    def test_prefiere_el_vertical_aunque_el_horizontal_sea_mas_grande(self):
+        clips = [
+            {"id": 1, "tipo": "video", "ancho": 3840, "alto": 2160, "duracion": 8, "archivo": "a"},
+            {"id": 2, "tipo": "video", "ancho": 1080, "alto": 1920, "duracion": 8, "archivo": "b"},
+        ]
+        self.assertEqual(stock.elegir(clips)["id"], 2)
 
     @override_settings(PIXABAY_API_KEY="")
     def test_sin_clave_avisa_claro(self):

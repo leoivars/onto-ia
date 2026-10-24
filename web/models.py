@@ -198,6 +198,17 @@ class Publicacion(models.Model):
         max_length=300, blank=True,
         help_text="Descripción para lectores de pantalla. Si queda vacía, se usa la frase.")
     pie = models.CharField(max_length=120, default="Coaching ontológico · onto.xz.com.ar")
+    FORMATOS = [("tarjeta", "Tarjeta"), ("reel", "Reel")]
+    formato = models.CharField(max_length=10, choices=FORMATOS, default="tarjeta")
+    consulta = models.CharField(max_length=80, blank=True,
+                                help_text="Búsqueda en inglés para el clip de stock.")
+    clip_id = models.CharField(max_length=32, blank=True)
+    clip_archivo = models.CharField(max_length=200, blank=True,
+                                    help_text="Ruta del clip dentro de media/stock.")
+    clip_autor = models.CharField(max_length=80, blank=True)
+    clip_modo = models.CharField(max_length=12, blank=True, help_text="vertical o recorte.")
+    video = models.CharField(max_length=200, blank=True,
+                             help_text="Ruta del MP4 dentro de media/publicaciones.")
     estado = models.CharField(max_length=12, choices=ESTADOS, default="borrador")
     programada = models.DateTimeField(null=True, blank=True, db_index=True)
     ig_id = models.CharField(max_length=64, blank=True)
@@ -214,6 +225,28 @@ class Publicacion(models.Model):
 
     def __str__(self):
         return f"{self.nombre} · {self.get_estado_display()}"
+
+    @property
+    def es_reel(self):
+        return self.formato == "reel"
+
+    @property
+    def tiene_video(self):
+        from pathlib import Path
+
+        from django.conf import settings as cfg
+
+        return bool(self.video) and (Path(cfg.MEDIA_ROOT) / self.video).exists()
+
+    @property
+    def video_url(self):
+        from pathlib import Path
+
+        from django.conf import settings as cfg
+
+        ruta = Path(cfg.MEDIA_ROOT) / (self.video or "")
+        version = int(ruta.stat().st_mtime) if self.video and ruta.exists() else 0
+        return f"https://{cfg.SITE_DOMAIN}/ig/{self.nombre}.mp4?v={version}"
 
     @property
     def imagen_url(self):

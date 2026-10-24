@@ -103,3 +103,54 @@ def reel(texto, salida, fondo=None, segundos=8, fps=30):
         if proceso.returncode != 0:
             raise RuntimeError(proceso.stderr[-800:])
     return salida
+
+
+def reel_clip(video, texto, salida, segundos=8, recorte=False, inicio=0, fps=30):
+    """Reel a partir de un clip de stock: recorte 9:16, duotono de marca y texto.
+
+    `recorte=True` toma un clip horizontal y lo recorta al centro; con 4K alcanza
+    y sobra resolución. Si el clip es más corto que la pieza, se repite en bucle.
+    """
+    salida = Path(salida)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    video = Path(video)
+    if not video.exists():
+        raise RuntimeError(f"no existe el clip: {video}")
+
+    # Duotono: negro → verde de marca, blanco → crema. Se aplica sobre escala de grises.
+    r = f"31+{245 - 31}*val/255"
+    g = f"77+{240 - 77}*val/255"
+    b = f"61+{230 - 61}*val/255"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        capa = _capa_texto(texto, f"{tmp}/texto.png")
+        if recorte:
+            encuadre = ("crop=ih*9/16:ih:(iw-ih*9/16)/2:0,"
+                        f"scale={ANCHO}:{ALTO}:flags=lanczos")
+        else:
+            encuadre = (f"scale={ANCHO}:{ALTO}:force_original_aspect_ratio=increase:flags=lanczos,"
+                        f"crop={ANCHO}:{ALTO}")
+
+        filtro = (
+            f"[0:v]{encuadre},hue=s=0,"
+            f"lutrgb=r='{r}':g='{g}':b='{b}',"
+            "eq=brightness=-0.10:contrast=1.06,setsar=1,fps={fps}[bg];"
+            "[1:v]format=rgba,fade=in:st=0.4:d=0.8:alpha=1[tx];"
+            "[bg][tx]overlay=0:0:format=auto,"
+            f"fade=out:st={max(segundos - 0.7, 0)}:d=0.7,format=yuv420p[v]"
+        ).format(fps=fps, segundos=segundos)
+
+        orden = [
+            "ffmpeg", "-y",
+            "-stream_loop", "-1", "-ss", str(inicio), "-t", str(segundos), "-i", str(video),
+            "-loop", "1", "-t", str(segundos), "-i", str(capa),
+            "-filter_complex", filtro, "-map", "[v]",
+            "-t", str(segundos), "-r", str(fps),
+            "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+            "-profile:v", "high", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            "-an", str(salida),
+        ]
+        proceso = subprocess.run(orden, capture_output=True, text=True)
+        if proceso.returncode != 0:
+            raise RuntimeError(proceso.stderr[-800:])
+    return salida

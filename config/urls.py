@@ -21,6 +21,7 @@ urlpatterns = [
     path("baja/<str:token>/", wv.baja_confirmar, name="baja_confirmar"),
     path("baja-correos/<str:token>/", wv.baja_correos, name="baja_correos"),
     path("ig/<slug:nombre>.jpg", wv.publicacion_imagen, name="publicacion_imagen"),
+    path("ig/<slug:nombre>.mp4", wv.publicacion_video, name="publicacion_video"),
     path("mi-ip/", wv.mi_ip, name="mi_ip"),
     path("gestion/", wv.gestion, name="gestion"),
     path("gestion/publicaciones/", wv.gestion_publicaciones, name="gestion_publicaciones"),

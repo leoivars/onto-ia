@@ -25,7 +25,8 @@ class Command(BaseCommand):
                 texto=entrada["texto"],
                 caption=entrada.get("caption", ""),
                 pie=entrada.get("pie"),
-                fondo=entrada.get("fondo"))
+                fondo=entrada.get("fondo"),
+                formato=entrada.get("formato", "tarjeta"))
             creadas += int(nueva)
             actualizadas += int(not nueva)
         self.stdout.write(self.style.SUCCESS(
