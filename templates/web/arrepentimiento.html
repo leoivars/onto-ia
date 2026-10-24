@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Botón de arrepentimiento · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,follow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Botón de arrepentimiento</p>
+    <h1 class="h1-sm">Revocar una contratación.</h1>
+    <p class="lead">Si contrató un plan a distancia, tiene diez días corridos desde la
+      contratación para revocarlo sin costo y sin explicar por qué. Complete el formulario y le
+      enviamos el acuse con un código.</p>
+
+    <form method="post" class="intake-form">
+      {% csrf_token %}
+      <div class="field">
+        <label for="id_email">Correo con el que contrató</label>
+        <p class="hint">Lo necesitamos para ubicar la cuenta. Le enviamos el acuse a esa dirección.</p>
+        <input type="email" name="email" id="id_email" value="{{ email|default:'' }}"
+               autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="id_nombre">Nombre y apellido <span class="muted">(opcional)</span></label>
+        <input type="text" name="nombre" id="id_nombre" value="{{ nombre|default:'' }}"
+               autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="id_detalle">Qué contrató y cuándo <span class="muted">(opcional)</span></label>
+        <p class="hint">Si lo recuerda, ayuda a resolverlo más rápido. No es obligatorio.</p>
+        <textarea name="detalle" id="id_detalle" rows="4">{{ detalle|default:'' }}</textarea>
+      </div>
+
+      <div style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label for="id_empresa">No completar</label>
+        <input type="text" name="empresa" id="id_empresa" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="cta-row">
+        <button class="btn" type="submit">Enviar el pedido</button>
+        <a class="btn btn-ghost" href="{% url 'legal' %}#arrepentimiento">Leer el texto legal</a>
+      </div>
+      <p class="tiny muted">También puede escribir a <a href="mailto:{{ contacto }}?subject=Bot%C3%B3n%20de%20arrepentimiento">{{ contacto }}</a>
+        con el asunto «Botón de arrepentimiento».</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

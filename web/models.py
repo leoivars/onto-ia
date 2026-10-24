@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.db import models
@@ -269,3 +269,39 @@ class DispositivoTOTP(models.Model):
     def __str__(self):
         estado = "activo" if self.confirmado_en else "sin confirmar"
         return f"{self.user} · {estado}"
+
+
+class Arrepentimiento(models.Model):
+    """Solicitud de revocación de una contratación a distancia (Res. 424/2020).
+
+    Se registra siempre, aunque el correo de acuse falle: la constancia es la que
+    acredita que el pedido existió y cuándo entró.
+    """
+
+    ESTADOS = [
+        ("recibida", "Recibida"),
+        ("respondida", "Respondida"),
+        ("rechazada", "Rechazada"),
+    ]
+
+    codigo = models.CharField(max_length=12, unique=True)
+    email = models.EmailField()
+    nombre = models.CharField(max_length=120, blank=True)
+    detalle = models.TextField(blank=True, help_text="Lo que escribió la persona.")
+    estado = models.CharField(max_length=12, choices=ESTADOS, default="recibida")
+    creada = models.DateTimeField(auto_now_add=True)
+    respondida_en = models.DateTimeField(null=True, blank=True)
+    nota = models.TextField(blank=True, help_text="Respuesta interna, no se envía.")
+
+    class Meta:
+        ordering = ("-creada",)
+        verbose_name = "solicitud de arrepentimiento"
+        verbose_name_plural = "solicitudes de arrepentimiento"
+
+    def __str__(self):
+        return f"{self.codigo} · {self.email} · {self.get_estado_display()}"
+
+    @property
+    def vence(self):
+        """Último día para responder: diez días hábiles desde la recepción."""
+        return self.creada + timedelta(days=14)

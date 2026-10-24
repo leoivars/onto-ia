@@ -438,7 +438,7 @@ def gestion(request):
 
     from . import analitica_ig, instagram
     from .metricas import resumen as resumen_metricas
-    from .models import EmailSecuencia, Lead, Publicacion
+    from .models import Arrepentimiento, EmailSecuencia, Lead, Publicacion
 
     carpeta = Path(cfg.MEDIA_ROOT) / "publicaciones"
 
@@ -489,6 +489,88 @@ def gestion(request):
             created_at__gte=timezone.now() - timedelta(days=7)).count(),
         "leads": Lead.objects.count(),
         "secuencia_pendiente": EmailSecuencia.objects.filter(enviado=False).count(),
+        "arrepentimientos": Arrepentimiento.objects.filter(estado="recibida").count(),
         "ip": request.META.get("HTTP_CF_CONNECTING_IP") or request.META.get("REMOTE_ADDR", ""),
         "token_ig": bool(getattr(cfg, "IG_TOKEN", "") or __import__("os").environ.get("IG_TOKEN")),
     })
+
+
+# ------------------------------------------------------- botón de arrepentimiento
+
+def _codigo_arrepentimiento():
+    import secrets
+
+    alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    return "AR-" + "".join(secrets.choice(alfabeto) for _ in range(6))
+
+
+def arrepentimiento(request):
+    """Formulario del botón de arrepentimiento (Res. 424/2020, art. 34 Ley 24.240).
+
+    Registra el pedido siempre y manda dos correos: acuse a la persona y aviso
+    interno. Si el envío falla, la constancia queda igual.
+    """
+    from django.conf import settings as cfg
+    from django.core.cache import cache
+    from django.core.mail import send_mail
+    from django.utils import timezone as tz
+
+    from .models import Arrepentimiento
+
+    if request.method == "POST":
+        # Trampa para robots: el campo va oculto y una persona no lo ve.
+        if (request.POST.get("empresa") or "").strip():
+            return render(request, "web/arrepentimiento_ok.html", {"codigo": "AR-RECIBIDO"})
+
+        email = (request.POST.get("email") or "").strip().lower()
+        nombre = (request.POST.get("nombre") or "").strip()[:120]
+        detalle = (request.POST.get("detalle") or "").strip()[:2000]
+
+        clave = f"arrepentimiento:{email}"
+        intentos = cache.get(clave, 0)
+        if intentos >= 3:
+            messages.error(request, "Ya recibimos varios pedidos con ese correo. "
+                                    "Escríbanos directamente y lo resolvemos.")
+            return redirect("arrepentimiento")
+        if not email or "@" not in email:
+            messages.error(request, "Necesitamos el correo con el que contrató, para poder ubicar la cuenta.")
+            return render(request, "web/arrepentimiento.html", {"email": email, "nombre": nombre,
+                                                                "detalle": detalle})
+
+        solicitud = Arrepentimiento.objects.create(
+            codigo=_codigo_arrepentimiento(), email=email, nombre=nombre, detalle=detalle)
+        cache.set(clave, intentos + 1, 3600)
+
+        texto = (
+            f"Recibimos su pedido de arrepentimiento.\n\n"
+            f"Código: {solicitud.codigo}\n"
+            f"Fecha de recepción: {tz.localtime(solicitud.creada):%d/%m/%Y %H:%M}\n\n"
+            "Usted revocó la contratación dentro de los diez días corridos, sin costo y sin "
+            "expresión de causa, conforme al artículo 34 de la Ley 24.240 y la Resolución "
+            "424/2020. Damos de baja la suscripción y reintegramos el importe total por el mismo "
+            "medio de pago.\n\n"
+            "Le confirmamos la baja y el reintegro dentro de los diez días hábiles. Guarde este "
+            "código: es la constancia de que el pedido entró.\n\n"
+            f"Si necesita algo más, responda este correo o escriba a {cfg.CONTACT_EMAIL}.\n"
+        )
+        try:
+            send_mail(f"Recibimos su pedido de arrepentimiento · {solicitud.codigo}",
+                      texto, cfg.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+        except Exception:  # el pedido ya está registrado: el correo no lo condiciona
+            logger.exception("No se pudo enviar el acuse de arrepentimiento %s", solicitud.codigo)
+
+        try:
+            send_mail(f"[Onto] Arrepentimiento {solicitud.codigo} · {email}",
+                      f"Solicitud registrada el {tz.localtime(solicitud.creada):%d/%m/%Y %H:%M}.\n"
+                      f"Correo de la cuenta: {email}\n"
+                      f"Nombre: {nombre or '(no indicado)'}\n\n"
+                      f"Detalle:\n{detalle or '(sin detalle)'}\n\n"
+                      f"Responder dentro de los diez días hábiles. Panel: /admin/web/arrepentimiento/\n",
+                      cfg.DEFAULT_FROM_EMAIL, [cfg.CONTACT_EMAIL], fail_silently=True)
+        except Exception:
+            logger.exception("No se pudo avisar internamente el arrepentimiento %s", solicitud.codigo)
+
+        return render(request, "web/arrepentimiento_ok.html", {"codigo": solicitud.codigo,
+                                                               "email": email})
+
+    return render(request, "web/arrepentimiento.html")

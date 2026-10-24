@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
-from .models import (DispositivoTOTP, EmailSecuencia, InviteCode, Lead, OptOut,
+from .models import (Arrepentimiento, DispositivoTOTP, EmailSecuencia, InviteCode, Lead, OptOut,
                      Profile, Publicacion)
 
 
@@ -132,3 +132,20 @@ class EmailSecuenciaAdmin(admin.ModelAdmin):
 class OptOutAdmin(admin.ModelAdmin):
     list_display = ("email", "creado")
     search_fields = ("email",)
+
+
+@admin.register(Arrepentimiento)
+class ArrepentimientoAdmin(admin.ModelAdmin):
+    list_display = ("codigo", "email", "creada", "vence", "estado")
+    list_filter = ("estado",)
+    search_fields = ("codigo", "email", "nombre")
+    date_hierarchy = "creada"
+    readonly_fields = ("codigo", "email", "nombre", "detalle", "creada")
+    actions = ["marcar_respondida"]
+
+    @admin.action(description="Marcar como respondida")
+    def marcar_respondida(self, request, queryset):
+        from django.utils import timezone as tz
+
+        actualizadas = queryset.update(estado="respondida", respondida_en=tz.now())
+        self.message_user(request, f"{actualizadas} solicitud(es) marcadas como respondidas.")

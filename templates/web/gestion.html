@@ -120,6 +120,11 @@
         <p class="kicker">Correos</p>
         <p class="small">{{ secuencia_pendiente }} correos de seguimiento programados sin enviar.</p>
         <a class="btn btn-sm btn-ghost" href="{% url 'admin:web_emailsecuencia_changelist' %}">Ver secuencia</a>
+        {% if arrepentimientos %}
+          <p class="small" style="margin-top:10px;"><strong>{{ arrepentimientos }} solicitud(es) de
+            arrepentimiento sin responder.</strong> El plazo es de diez días hábiles.</p>
+          <a class="btn btn-sm btn-ghost" href="{% url 'admin:web_arrepentimiento_changelist' %}">Ver solicitudes</a>
+        {% endif %}
       </div>
       <div class="card">
         <p class="kicker">Accesos</p>

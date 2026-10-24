@@ -17,6 +17,7 @@ urlpatterns = [
     path("legal/", wv.legal, name="legal"),
     path("ayuda/", wv.ayuda_view, name="ayuda"),
     path("baja/", wv.baja, name="baja"),
+    path("arrepentimiento/", wv.arrepentimiento, name="arrepentimiento"),
     path("baja/<str:token>/", wv.baja_confirmar, name="baja_confirmar"),
     path("baja-correos/<str:token>/", wv.baja_correos, name="baja_correos"),
     path("ig/<slug:nombre>.jpg", wv.publicacion_imagen, name="publicacion_imagen"),

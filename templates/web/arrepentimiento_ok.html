@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Pedido registrado · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Pedido registrado</p>
+    <h1 class="h1-sm">Su código es {{ codigo }}.</h1>
+    <p class="lead">Registramos la revocación de la contratación. Guarde este código: es la
+      constancia de que el pedido entró, con fecha y hora.</p>
+
+    <div class="card">
+      <p class="small"><strong>Qué sigue.</strong> Damos de baja la suscripción y reintegramos el
+        importe total por el mismo medio de pago. Le confirmamos por correo dentro de los diez días
+        hábiles.</p>
+      {% if email %}
+        <p class="small">Enviamos el acuse a <strong>{{ email }}</strong>. Si no aparece en unos
+          minutos, revise la carpeta de correo no deseado.</p>
+      {% endif %}
+      <p class="small">El derecho de revocación no necesita causa ni tiene costo: artículo 34 de la
+        Ley 24.240 y Resolución 424/2020.</p>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn btn-ghost" href="{% url 'legal' %}">Términos y privacidad</a>
+      <a class="btn btn-ghost" href="{% url 'landing' %}">Volver al inicio</a>
+    </div>
+    <p class="tiny muted">Si necesita hablar con una persona, escriba a
+      <a href="mailto:{{ contacto }}">{{ contacto }}</a>.</p>
+  </div>
+</section>
+{% endblock %}
