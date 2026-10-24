@@ -135,7 +135,23 @@ def generar(texto, salida, voz=None, forzar=False):
         raise VozError("el audio devuelto es demasiado corto: revisá la clave o la voz")
     salida.write_bytes(datos)
     marca.write_text(actual, encoding="utf-8")
+    _aplicar_ritmo(salida)
     return salida
+
+
+def _aplicar_ritmo(archivo, ritmo=None):
+    """Acelera o frena sin cambiar el tono. 1.0 = sin tocar."""
+    ritmo = float(ritmo if ritmo is not None else getattr(settings, "VOZ_RITMO", 1.0))
+    if abs(ritmo - 1.0) < 0.01:
+        return archivo
+    temporal = Path(str(archivo) + ".ritmo.mp3")
+    proceso = subprocess.run(
+        ["ffmpeg", "-y", "-i", str(archivo), "-filter:a", f"atempo={ritmo:.3f}",
+         "-b:a", "128k", str(temporal)], capture_output=True, text=True)
+    if proceso.returncode != 0:
+        raise VozError(f"no se pudo ajustar el ritmo: {proceso.stderr[-200:]}")
+    temporal.replace(archivo)
+    return archivo
 
 
 def duracion(archivo):

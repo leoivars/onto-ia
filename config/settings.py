@@ -140,6 +140,8 @@ AZURE_VOZ = os.environ.get("AZURE_VOZ", "es-AR-TomasNeural")
 ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
 ELEVENLABS_VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "")
 ELEVENLABS_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_multilingual_v2")
+# Ritmo de lectura: 1.0 natural, 1.06 algo más vivo. Se aplica sin cambiar el tono.
+VOZ_RITMO = float(os.environ.get("VOZ_RITMO", "1.06"))
 
 # Pixabay: banco de imágenes y clips para las piezas de redes.
 PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "")

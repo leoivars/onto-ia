@@ -181,7 +181,7 @@ def reel(texto, salida, fondo=None, segundos=8, fps=30):
 
 
 def reel_clip(video, texto, salida, segundos=8, recorte=False, inicio=0, fps=30,
-              entradas=None, audio=None):
+              entradas=None, audio=None, preset="veryfast"):
     """Reel a partir de un clip de stock: recorte 9:16, duotono de marca y texto.
 
     `recorte=True` toma un clip horizontal y lo recorta al centro; con 4K alcanza
@@ -251,7 +251,7 @@ def reel_clip(video, texto, salida, segundos=8, recorte=False, inicio=0, fps=30,
         else:
             orden += ["-an"]
         orden += ["-t", str(segundos), "-r", str(fps),
-                  "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+                  "-c:v", "libx264", "-preset", preset, "-crf", "22",
                   "-profile:v", "high", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
                   str(salida)]
         proceso = subprocess.run(orden, capture_output=True, text=True)

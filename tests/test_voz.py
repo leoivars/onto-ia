@@ -31,7 +31,7 @@ class ProveedorTest(TestCase):
         self.assertEqual(voz.proveedor(), "elevenlabs")
 
 
-@override_settings(AZURE_SPEECH_KEY="clave", AZURE_SPEECH_REGION="sa-saopaulo-1")
+@override_settings(AZURE_SPEECH_KEY="clave", AZURE_SPEECH_REGION="sa-saopaulo-1", VOZ_RITMO=1.0)
 class GeneracionTest(TestCase):
     def test_escribe_el_audio_y_no_repite_la_llamada(self):
         destino = Path(tempfile.mkdtemp()) / "voz.mp3"
@@ -101,3 +101,19 @@ class RenderConVozTest(TestCase):
         self.assertIn("video", datos)
         publicacion.refresh_from_db()
         self.assertTrue(publicacion.tiempos)
+
+
+@override_settings(AZURE_SPEECH_KEY="clave", AZURE_SPEECH_REGION="sa-saopaulo-1", VOZ_RITMO=1.12)
+class RitmoTest(TestCase):
+    def test_acelera_sin_cambiar_el_tono(self):
+        if SIN_FFMPEG:
+            self.skipTest("ffmpeg no está instalado")
+        carpeta = Path(tempfile.mkdtemp())
+        origen = carpeta / "base.mp3"
+        subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=300:duration=4",
+                        str(origen)], capture_output=True, check=True)
+        antes = voz.duracion(origen)
+        voz._aplicar_ritmo(origen)
+        despues = voz.duracion(origen)
+        self.assertLess(despues, antes * 0.95)
+        self.assertGreater(despues, antes * 0.85)

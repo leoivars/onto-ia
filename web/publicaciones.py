@@ -132,7 +132,11 @@ def render(publicacion, segundos=None):
         segundos = round(duracion + 0.8, 2)
         # Si los tiempos no fueron medidos sobre una música, se reparten sobre la voz.
         if not entradas:
-            entradas = voz_api.repartir(duracion, 3)
+            # Un bloque de texto por frase del titular: entran cuando la voz ya dijo lo anterior.
+            import re as _re
+
+            frases = [f for f in _re.split(r"(?<=[.!?…])\s+", publicacion.texto or "") if f.strip()]
+            entradas = voz_api.repartir(duracion, max(len(frases), 2))
             publicacion.tiempos = entradas
             publicacion.save(update_fields=["tiempos", "actualizado"])
 
