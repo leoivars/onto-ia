@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Autorizar conexión · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Seguridad</p>
+    <h1 class="h1-sm">Esta conexión no está autorizada.</h1>
+    <p class="lead">El panel solo responde a las direcciones habilitadas. Su IP ahora es
+      <strong>{{ ip }}</strong>{% if ya_esta %} y figura como autorizada: si igual no entra,
+      recargue con Ctrl+Shift+R.{% endif %}</p>
+
+    <div class="card">
+      <p class="small">Para habilitarla le enviamos un enlace al correo de contacto del sitio.
+        El enlace vence en una hora y sirve una sola vez. Abrirlo desde cualquier dispositivo
+        autoriza esta IP, no el dispositivo desde el que lo abra.</p>
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn" type="submit">Enviar el enlace de autorización</button>
+      </form>
+    </div>
+
+    <p class="tiny muted">Si no reconoce esta conexión, no pida el enlace: la IP sigue bloqueada
+      mientras nadie lo abra. Puede revisar las IPs habilitadas en
+      <code>/admin/web/ipautorizada/</code> desde una conexión ya autorizada.</p>
+  </div>
+</section>
+{% endblock %}

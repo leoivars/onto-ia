@@ -1,7 +1,8 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 
-from .models import (Arrepentimiento, DispositivoTOTP, EmailSecuencia, InviteCode, Lead, OptOut,
+from .models import (Arrepentimiento, DispositivoTOTP, EmailSecuencia, IPAutorizada,
+                     InviteCode, Lead, OptOut,
                      Profile, Publicacion)
 
 
@@ -149,3 +150,10 @@ class ArrepentimientoAdmin(admin.ModelAdmin):
 
         actualizadas = queryset.update(estado="respondida", respondida_en=tz.now())
         self.message_user(request, f"{actualizadas} solicitud(es) marcadas como respondidas.")
+
+
+@admin.register(IPAutorizada)
+class IPAutorizadaAdmin(admin.ModelAdmin):
+    list_display = ("ip", "nota", "creada")
+    search_fields = ("ip", "nota")
+    readonly_fields = ("creada",)

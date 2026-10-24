@@ -102,6 +102,8 @@ class SegundoFactorMiddleware:
 # ------------------------------------------------------------- lista blanca de IP
 
 RUTAS_PROTEGIDAS = ("/admin/", "/metricas/", "/seguridad/", "/gestion/")
+# Estas rutas quedan fuera del control por IP: son las que permiten autorizarla.
+RUTAS_SIN_IP = ("/seguridad/ip/",)
 
 
 def ip_cliente(request):
@@ -111,6 +113,19 @@ def ip_cliente(request):
         if valor:
             return valor.split(",")[0].strip()
     return request.META.get("REMOTE_ADDR", "")
+
+
+def ips_autorizadas():
+    """IPs aprobadas por enlace de correo. Se cachean 30 segundos."""
+    from django.core.cache import cache
+
+    datos = cache.get("ips_autorizadas")
+    if datos is None:
+        from .models import IPAutorizada
+
+        datos = list(IPAutorizada.objects.values_list("ip", flat=True))
+        cache.set("ips_autorizadas", datos, 30)
+    return datos
 
 
 def ip_permitida(ip, permitidas):
@@ -147,11 +162,18 @@ class PanelPorIPMiddleware:
         from django.conf import settings
         from django.http import HttpResponse
 
+        if any(request.path.startswith(r) for r in RUTAS_SIN_IP):
+            return self.get_response(request)
+
         if any(request.path.startswith(r) for r in RUTAS_PROTEGIDAS):
-            permitidas = getattr(settings, "ADMIN_IPS", [])
+            permitidas = list(getattr(settings, "ADMIN_IPS", [])) + ips_autorizadas()
             if not ip_permitida(ip_cliente(request), permitidas):
                 logger.warning("Acceso al panel bloqueado desde %s (%s)",
                                ip_cliente(request), request.path)
+                # Al administrador ya autenticado se le ofrece autorizar su conexión
+                # por correo; a cualquier otro se le responde como si no existiera.
+                if es_administrador(getattr(request, "user", None)):
+                    return redirect(f"/seguridad/ip/?next={request.path}")
                 return HttpResponse("No encontrado", status=404,
                                     content_type="text/plain; charset=utf-8")
         return self.get_response(request)

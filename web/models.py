@@ -338,3 +338,23 @@ class Arrepentimiento(models.Model):
     def vence(self):
         """Último día para responder: diez días hábiles desde la recepción."""
         return self.creada + timedelta(days=14)
+
+
+class IPAutorizada(models.Model):
+    """IP o rango autorizado a ver el panel, aprobado por enlace de correo.
+
+    Se suma a ADMIN_IPS: el archivo es la lista de base y esto permite autorizar
+    una conexión nueva sin editar el .env ni reiniciar el contenedor.
+    """
+
+    ip = models.CharField(max_length=64, unique=True, help_text="Dirección o rango CIDR.")
+    nota = models.CharField(max_length=120, blank=True)
+    creada = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-creada",)
+        verbose_name = "IP autorizada"
+        verbose_name_plural = "IPs autorizadas"
+
+    def __str__(self):
+        return self.ip

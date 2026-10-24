@@ -594,3 +594,83 @@ def arrepentimiento(request):
                                                                "email": email})
 
     return render(request, "web/arrepentimiento.html")
+
+
+# ------------------------------------------- autorización de una IP nueva del panel
+
+def _ip_sesion(request):
+    from .seguridad import ip_cliente
+
+    return ip_cliente(request)
+
+
+@login_required
+def portal_ip(request):
+    """Pantalla que ve el administrador cuando entra desde una conexión no autorizada.
+
+    No habilita nada por sí sola: manda un enlace firmado al correo de contacto.
+    Quien abre ese enlace, autoriza.
+    """
+    from django.conf import settings as cfg
+    from django.core import signing
+    from django.core.mail import send_mail
+
+    from .seguridad import es_administrador, ip_permitida
+
+    if not es_administrador(request.user):
+        raise Http404
+
+    ip = _ip_sesion(request)
+    destino = request.GET.get("next") or "/gestion/"
+    permitidas = list(getattr(cfg, "ADMIN_IPS", []))
+    from .seguridad import ips_autorizadas
+
+    permitidas += ips_autorizadas()
+    ya_esta = ip_permitida(ip, permitidas)
+
+    if request.method == "POST":
+        token = signing.dumps({"ip": ip, "por": request.user.email}, salt="ip-panel")
+        enlace = request.build_absolute_uri(f"/seguridad/ip/{token}/")
+        cuerpo = (
+            f"Se pidió autorizar una conexión nueva al panel de {cfg.SITE_NAME}.\n\n"
+            f"IP: {ip}\n"
+            f"Pedido por: {request.user.email}\n"
+            f"Navegador: {request.META.get('HTTP_USER_AGENT', '')[:160]}\n\n"
+            "Si es usted, abra este enlace para habilitar esa conexión por una hora:\n"
+            f"{enlace}\n\n"
+            "El enlace vence en una hora y sirve una sola vez. Si no reconoce el pedido, "
+            "ignórelo: sin abrirlo, la IP sigue bloqueada.\n"
+        )
+        try:
+            send_mail(f"[Onto] Autorizar conexión desde {ip}", cuerpo,
+                      cfg.DEFAULT_FROM_EMAIL, [cfg.CONTACT_EMAIL], fail_silently=False)
+            messages.success(request, f"Le enviamos un correo a {cfg.CONTACT_EMAIL} para "
+                                      "autorizar esta conexión.")
+        except Exception:
+            logger.exception("No se pudo enviar el pedido de autorización de IP")
+            messages.error(request, "No pudimos enviar el correo. Revise el correo del sistema "
+                                    "o pida la IP por otro canal.")
+        return redirect(f"/seguridad/ip/?next={destino}")
+
+    return render(request, "web/portal_ip.html", {"ip": ip, "next": destino, "ya_esta": ya_esta})
+
+
+def confirmar_ip(request, token):
+    """Abre el enlace del correo y autoriza la IP. No requiere sesión."""
+    from django.core import signing
+    from django.core.cache import cache
+
+    from .models import IPAutorizada
+
+    try:
+        datos = signing.loads(token, salt="ip-panel", max_age=3600)
+    except signing.BadSignature:
+        return render(request, "web/portal_ip_error.html", status=410)
+
+    ip = datos.get("ip", "")
+    if not ip:
+        return render(request, "web/portal_ip_error.html", status=410)
+    IPAutorizada.objects.get_or_create(ip=ip, defaults={"nota": f"por {datos.get('por', '')}"[:120]})
+    cache.delete("ips_autorizadas")
+    messages.success(request, f"La conexión {ip} quedó autorizada. Ya puede usar el panel.")
+    return redirect("/gestion/")

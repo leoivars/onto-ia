@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Enlace vencido · {{ SITE_NAME }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="kicker">Seguridad</p>
+    <h1 class="h1-sm">El enlace no es válido o venció.</h1>
+    <p class="lead">Los enlaces de autorización duran una hora y sirven una sola vez.</p>
+    <p class="small">Vuelva a la pantalla de autorización desde el navegador donde estaba
+      trabajando y pida uno nuevo. Si el problema sigue, escriba a
+      <a href="mailto:{{ contacto }}">{{ contacto }}</a>.</p>
+    <a class="btn btn-ghost" href="/seguridad/ip/">Pedir un enlace nuevo</a>
+  </div>
+</section>
+{% endblock %}
