@@ -36,14 +36,16 @@
         {{ form.consent }}
         <label for="id_consent" class="consent-label">
           Autorizo el tratamiento de mis datos personales, incluida la información sensible que
-          decida escribir, con la única finalidad de generar mis informes de coaching. Leí los
+          decida escribir, con la única finalidad de generar mis informes de coaching, y su
+          transmisión seudonimizada al proveedor de inteligencia artificial que describe la
+          política de privacidad. Leí los
           <a href="{% url 'legal' %}" target="_blank">términos y la política de privacidad</a>.
         </label>
       </div>
       {% if form.consent.errors %}<p class="err">{{ form.consent.errors|join:" " }}</p>{% endif %}
 
       <button class="btn full" type="submit">Crear cuenta y empezar</button>
-      <p class="tiny muted">Ya tiene cuenta? <a href="{% url 'login' %}">Ingresar</a>.</p>
+      <p class="tiny muted">¿Ya tiene cuenta? <a href="{% url 'login' %}">Ingresar</a>.</p>
     </form>
   </div>
 </section>
